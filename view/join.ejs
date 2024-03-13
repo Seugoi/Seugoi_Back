@@ -1,0 +1,23 @@
+<script>
+    function joinUser() {
+        var form = document.getElementById("join");
+        axios({
+            method: 'post',
+            url: 'http://localhost:3008/join',
+            data: {
+                id: form.id.value,
+                name: form.name.value,
+                email: form.email.value,
+                password: form.password.value
+            }
+        }).then((response) => {
+            return response.data;
+        }).then((data) => {
+
+            console.log(data);
+            //회원 가입이 완료되었습니다.
+            let html = "<h6 class='fw-bold text-center mt-5'>회원가입이 완료되었습니다!</h6>"
+            document.getElementById("contents").innerHTML = html;
+        })
+    }
+</script>
