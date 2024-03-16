@@ -36,28 +36,47 @@ router.post('/login', async (req, res) => {
 router.post('/join', (req, res) => {
     const { user_id, user_pw, user_email, user_job } = req.body;
 
-    // MySQL 데이터베이스에서 현재 가장 큰 id 값 찾기
-    const getMaxIdQuery = 'SELECT MAX(id) AS maxId FROM seugoi_user';
-    db.query(getMaxIdQuery, (err, results) => {
+    // 사용자 아이디나 이메일이 이미 존재하는지 확인
+    const checkDuplicateQuery = 'SELECT * FROM seugoi_user WHERE user_id = ? OR user_email = ?';
+    db.query(checkDuplicateQuery, [user_id, user_email], (err, results) => {
         if (err) {
-            console.error('최대 id 조회 오류:', err);
-            return res.status(500).json({ message: '회원가입 실패'});
+            console.error('중복 확인 오류:', err);
+            return res.status(500).json({ error: '회원가입 실패' });
         }
 
-        // 가장 큰 id 값 찾기
-        let maxId = results[0].maxId || 0; // 만약 테이블에 아무 값도 없으면 maxId가 null이므로 0으로 초기화
-        const newId = maxId + 1;
-
-        // MySQL 데이터베이스에 새로운 사용자 추가
-        const sql = 'INSERT INTO seugoi_user (id, user_id, user_pw, user_email, user_job) VALUES (?, ?, ?, ?, ?)';
-        db.query(sql, [newId, user_id, user_pw, user_email, user_job], (err, result) => {
-            if (err) {
-                console.error('회원가입 오류:', err);
-                res.status(500).json({ message: '회원가입 실패'});
-            } else {
-                console.log('회원가입 성공');
-                res.status(201).json({ message: '회원가입 성공', user: req.body});
+        if (results.length > 0) {
+            // 이미 사용 중인 사용자 아이디나 이메일이 존재하는 경우
+            const existingUser = results[0];
+            if (existingUser.user_id === user_id) {
+                return res.status(400).json({ error: '이미 사용 중인 사용자 아이디입니다.' });
+            } else if (existingUser.user_email === user_email) {
+                return res.status(400).json({ error: '이미 사용 중인 사용자 이메일입니다.' });
             }
+        }
+
+        // MySQL 데이터베이스에서 현재 가장 큰 id 값 찾기
+        const getMaxIdQuery = 'SELECT MAX(id) AS maxId FROM seugoi_user';
+        db.query(getMaxIdQuery, (err, results) => {
+            if (err) {
+                console.error('최대 id 조회 오류:', err);
+                return res.status(500).json({ error: '회원가입 실패' });
+            }
+
+            // 가장 큰 id 값 찾기
+            let maxId = results[0].maxId || 0; // 만약 테이블에 아무 값도 없으면 maxId가 null이므로 0으로 초기화
+            const newId = maxId + 1;
+
+            // MySQL 데이터베이스에 새로운 사용자 추가
+            const sql = 'INSERT INTO seugoi_user (id, user_id, user_pw, user_email, user_job) VALUES (?, ?, ?, ?, ?)';
+            db.query(sql, [newId, user_id, user_pw, user_email, user_job], (err, result) => {
+                if (err) {
+                    console.error('회원가입 오류:', err);
+                    res.status(500).json({ error: '회원가입 실패' });
+                } else {
+                    console.log('회원가입 성공');
+                    res.status(201).json({ message: '회원가입 성공', user: req.body });
+                }
+            });
         });
     });
 });
