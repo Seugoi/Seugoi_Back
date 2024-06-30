@@ -28,7 +28,7 @@ class User extends Sequelize.Model {
                 unique: true
             },
             birthday: {
-                type: DataTypes.STRING,
+                type: DataTypes.DATE,
                 allowNull: false
             },
             job: {
