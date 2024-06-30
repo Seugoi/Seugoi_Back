@@ -94,7 +94,7 @@ exports.userInfoGetMind = async (req, res) => {
     const user_id = req.params.user_id;
 
     const user = await User.findOne({
-      attributes: ['nickname', 'email', 'birthday', 'job'],
+      attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
       where: {
         id: user_id
       }
