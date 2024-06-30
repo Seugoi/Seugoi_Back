@@ -18,6 +18,10 @@ class User extends Sequelize.Model {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
+            salt: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             email: {
                 type: DataTypes.STRING,
                 allowNull: false,
