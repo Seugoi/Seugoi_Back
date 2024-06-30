@@ -38,6 +38,7 @@ exports.signupPostMid = async (req, res) => {
           nickname,
           password: hashedPassword,
           email,
+          salt,
           birthday,
           job
       })
@@ -53,18 +54,22 @@ exports.signupPostMid = async (req, res) => {
 // 로그인
 exports.loginPostMid = async (req, res) => {
   try {
-      const { email, password } = req.body;
+      const { nickname, password } = req.body;
 
       // 사용자 확인
       const user = await User.findOne({
         where: {
-          email,
+          nickname,
         },
       });
 
       // 사용자가 존재하지 않으면 오류 응답
       if (!user) {
         return res.status(400).json({ error: '존재하지 않는 사용자입니다.' });
+      }
+
+      if (typeof user.salt !== 'string' || typeof user.password !== 'string') {
+        return res.status(500).json({ error: '서버 설정 오류: 잘못된 사용자 정보', 'user.salt': user });
       }
 
       // 입력된 비밀번호와 저장된 salt를 사용하여 해싱
@@ -79,7 +84,7 @@ exports.loginPostMid = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: '사용자 정보가 성공적으로 저장되지 않았습니다.' });
+    return res.status(500).json({ error: '로그인이 성공적으로 이루어지지 않았습니다.' });
   }
 };
   
@@ -89,7 +94,7 @@ exports.userInfoGetMind = async (req, res) => {
     const user_id = req.params.user_id;
 
     const user = await User.findOne({
-      attributes: ['nickname'],
+      attributes: ['nickname', 'email', 'birthday', 'job'],
       where: {
         id: user_id
       }
