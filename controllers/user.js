@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, Study } = require('../models');
 const crypto = require('crypto'); // 비밀번호 암호화
 
 // 회원가입
@@ -47,7 +47,7 @@ exports.signupPostMid = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: '사용자 정보가 성공적으로 저장되지 않았습니다.' });
+    return res.status(500).json({ error: '서버 오류로 사용자 정보가 성공적으로 저장되지 않았습니다.' });
   }
 };
 
@@ -84,7 +84,7 @@ exports.loginPostMid = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: '로그인이 성공적으로 이루어지지 않았습니다.' });
+    return res.status(500).json({ error: '서버 오류로 로그인이 성공적으로 이루어지지 않았습니다.' });
   }
 };
 
@@ -122,30 +122,67 @@ exports.userInfoGetMind = async (req, res) => {
 
 // 아이디 수정
 exports.nicknamePatchMid = async (req, res) => {
-    try {
-        const { user_id, nickname } = req.body;
-  
-        // 아이디 사용자가 존재하는지 확인
-        const checkNickname = await User.findOne({
-          where: {
-            nickname,
-          },
-        });
-  
-        if(checkNickname && checkNickname.dataValues.id != user_id){
-          return res.status(409).json({ error: '이미 존재하는 아이디입니다.' });
-        }
-  
-        const user = await User.update({
+  try {
+      const { user_id, nickname } = req.body;
+
+      // 아이디 사용자가 존재하는지 확인
+      const checkNickname = await User.findOne({
+        where: {
           nickname,
-        }, {
-          where : { id: user_id }
-        })
-  
-        return res.status(200).json({ message: '아이디 성공적으로 수정'});
-  
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: '아이디 수정 중 실패' });
-    }
-  };
+        },
+      });
+
+      if(checkNickname && checkNickname.dataValues.id != user_id){
+        return res.status(409).json({ error: '이미 존재하는 아이디입니다.' });
+      }
+
+      const user = await User.update({
+        nickname,
+      }, {
+        where : { id: user_id }
+      })
+
+      return res.status(200).json({ message: '아이디 성공적으로 수정'});
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류로 아이디 수정 실패' });
+  }
+};
+
+// 내가 쓴 스터디 조회
+exports.userStudy = async (req, res) => {
+  try {
+    const user_id = req.params.user_id;
+
+    const study = await Study.findOne({
+      attributes: [
+        'id',
+        'user_id',
+        'image',
+        'name',
+        'hashTag',
+        'endDate',
+        'title',
+        'simple-content',
+        'study-content',
+        'detail-content',
+        'recom-content',
+        'Dday',
+        'join_people_id',
+        'createdAt'
+      ],
+      
+      where: {
+        user_id: user_id
+      }
+    })
+    let response = {...study.dataValues};
+
+    res.json(response);
+
+  } catch(err) {
+    console.log(err);
+    res.status(500).json({ error: '서버 오류로 스터디 조회 실패' });
+  }
+}
