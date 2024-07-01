@@ -39,7 +39,7 @@ class Study extends Sequelize.Model {
                 allowNull: false
             },
             endData: {
-                type: DataTypes.DATE,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             title: {
@@ -61,6 +61,14 @@ class Study extends Sequelize.Model {
             recom_content: {
                 type: DataTypes.JSON,
                 allowNull: false
+            },
+            Dday: {
+                type: DataTypes.INTEGER,
+                allowNull: true
+            },
+            join_people_id: {
+                type: DataTypes.JSON,
+                allowNull: true
             }
         }, {
             sequelize,
