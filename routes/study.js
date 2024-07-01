@@ -5,7 +5,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage({ 
     fileFilter: (req, file, cb) => {
         if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            return cb(new Error('Only image files are allowed!'), false);
+            return cb(new Error('이미지 파일만 업로드 가능!'), false);
         }
         cb(null, true);
     },
