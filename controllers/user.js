@@ -87,8 +87,19 @@ exports.loginPostMid = async (req, res) => {
     return res.status(500).json({ error: '로그인이 성공적으로 이루어지지 않았습니다.' });
   }
 };
+
+// 모든 유저 조회
+exports.allStudy = async (req, res) => {
+  try {
+      const user = await User.findAll();
+      res.json(user);
+  } catch(err) {
+      console.error(err);
+      res.status(500).json({ error: "서버 오류로 모든 유저 정보 조회 실패" });
+  }
+}
   
-// 로그인 후 사용자 정보 조회
+// 특정 유저 정보 조회
 exports.userInfoGetMind = async (req, res) => {
   try{
     const user_id = req.params.user_id;
