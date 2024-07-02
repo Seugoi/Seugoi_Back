@@ -1,15 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-// image
-// name
-// hashTag
-// endDate
-// title
-// simple-content
-// study-work []
-// detail-content
-// recom-content
-
 class Study extends Sequelize.Model {
     static init(sequelize) {
         return super.init ({

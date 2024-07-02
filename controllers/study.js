@@ -1,5 +1,6 @@
-const { User, Study } = require('../models');
+const { User, Study, sequelize } = require('../models');
 const moment = require('moment');
+const { Sequelize } = require('sequelize');
 
 // 스터디 생성
 exports.createStudy = async (req, res) => {
@@ -83,7 +84,7 @@ exports.allStudy = async (req, res) => {
             }
         }));
 
-        res.json(response);
+        res.status(200).json(response);
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 모든 스터디 정보 조회 실패" });
@@ -97,8 +98,8 @@ exports.idStudy = async (req, res) => {
 
         const study = await Study.findOne({
             attributes: [
-                'id', 'user_id',
-                'image',
+                'id', 'user_id', 'name',
+                'image', 'hashTag',
                 'endData', 'title', 
                 'simple_content', 
                 'study_content', 
@@ -139,9 +140,47 @@ exports.idStudy = async (req, res) => {
             }
         };
 
-        res.json(response);
+        res.status(200).json(response);
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 특정 스터디 조회 실패" });
+    }
+}
+
+// 검색된 스터디 조회
+exports.keywordStudy = async (req, res) => {
+    try {
+        const keyword = req.params.keyword;
+
+        let searchString = `%${keyword}%`;
+
+        const study = await Study.findAll({
+            attributes: [
+                'id', 'user_id',
+                'name', 'image', 'hashTag',
+                'endData', 'title', 
+                'simple_content', 
+                'study_content', 
+                'detail_content', 
+                'recom_content',
+                'Dday',
+                'join_people_id'
+            ],
+            where: {
+                [Sequelize.Op.or]: [
+                    sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), {
+                        [Sequelize.Op.like]: searchString
+                    }),
+                    sequelize.where(sequelize.fn('LOWER', sequelize.cast(sequelize.col('hashTag'), 'CHAR')), {
+                        [Sequelize.Op.like]: searchString
+                    })
+                ]
+            }
+        })
+
+        res.status(200).json(study);
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 검색된 스터디 조회 실패" });
     }
 }
