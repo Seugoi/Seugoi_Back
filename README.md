@@ -4,6 +4,8 @@
 #### 📌Main Function
 
 #### 👩‍💻Developer
+- 김하은 : https://github.com/rlagkdms
+- 양가윤 : https://github.com/rkdbs
 - 최보람 : https://github.com/bhark065
 
 ### 🛠 Language / Tool
