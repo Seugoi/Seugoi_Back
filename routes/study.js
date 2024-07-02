@@ -17,7 +17,7 @@ const storage = multer.memoryStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('/create', upload.single('image'), studyMiddleware.createStudy); // 스터디 생성
+router.post('', upload.single('image'), studyMiddleware.createStudy); // 스터디 생성
 router.get('', studyMiddleware.allStudy); // 모든 스터디 조회
 router.get('/:study_id', studyMiddleware.idStudy); // 특정 스터디 조회
 
