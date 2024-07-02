@@ -150,39 +150,35 @@ exports.nicknamePatchMid = async (req, res) => {
   }
 };
 
-// 내가 쓴 스터디 조회
+// 내가 작성한 스터디 조회
 exports.userStudy = async (req, res) => {
   try {
-    const user_id = req.params.user_id;
+      const user_id = req.params.user_id;
 
-    const study = await Study.findOne({
-      attributes: [
-        'id',
-        'user_id',
-        'image',
-        'name',
-        'hashTag',
-        'endDate',
-        'title',
-        'simple-content',
-        'study-content',
-        'detail-content',
-        'recom-content',
-        'Dday',
-        'join_people_id',
-        'createdAt'
-      ],
-      
-      where: {
-        user_id: user_id
+      const study = await Study.findAll({
+          attributes: [
+              'id', 'user_id',
+              'image',
+              'endData', 'title', 
+              'simple_content', 
+              'study_content', 
+              'detail_content', 
+              'recom_content',
+              'Dday',
+              'join_people_id'
+          ],
+          where: {
+              user_id: user_id
+          }
+      })
+
+      if (!study) {
+          return res.status(404).json({ error: "스터디를 찾을 수 없습니다." });
       }
-    })
-    let response = {...study.dataValues};
 
-    res.json(response);
-
+      res.json(study);
   } catch(err) {
-    console.log(err);
-    res.status(500).json({ error: '서버 오류로 스터디 조회 실패' });
+      console.error(err);
+      res.status(500).json({ error: "서버 오류로 내가 작성한 스터디 조회 실패" });
   }
 }

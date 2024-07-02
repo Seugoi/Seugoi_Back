@@ -141,7 +141,7 @@ exports.idStudy = async (req, res) => {
 
         res.json(response);
     } catch(err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ error: "서버 오류로 특정 스터디 조회 실패" });
     }
 }
