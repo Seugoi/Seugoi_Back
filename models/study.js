@@ -28,7 +28,7 @@ class Study extends Sequelize.Model {
                 type: DataTypes.JSON,
                 allowNull: false
             },
-            endData: {
+            endDate: {
                 type: DataTypes.STRING,
                 allowNull: false
             },

@@ -21,5 +21,7 @@ router.post('', upload.single('image'), studyMiddleware.createStudy); // 스터�
 router.get('', studyMiddleware.allStudy); // 모든 스터디 조회
 router.get('/:study_id', studyMiddleware.idStudy); // 특정 스터디 조회
 router.get('/search/:keyword', studyMiddleware.keywordStudy); // 검색된 스터디 조회
+router.post('/join', studyMiddleware.joinStudy); // 스터디 가입
+router.get('/join/:user_id', studyMiddleware.JoinedStudy); // 내가 가입한 스터디 조회
 
 module.exports = router;

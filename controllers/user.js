@@ -89,9 +89,11 @@ exports.loginPostMid = async (req, res) => {
 };
 
 // 모든 유저 조회
-exports.allStudy = async (req, res) => {
+exports.allUser = async (req, res) => {
   try {
-      const user = await User.findAll();
+      const user = await User.findAll({
+        attributes: ['id', 'nickname', 'email', 'birthday', 'job']
+      });
       res.json(user);
   } catch(err) {
       console.error(err);
