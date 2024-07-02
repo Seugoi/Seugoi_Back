@@ -1,21 +1,26 @@
-const Sequelize = require('sequelize');
-const User = require('./users');
-const Study = require('./study');
+const Sequelize = require("sequelize");
+const User = require("./users");
+const Study = require("./study");
 
-const env = process.env.NODE_ENV || 'development';
-const config = require('../config/config.js')[env];
+const env = process.env.NODE_ENV || "development";
+const config = require("../config/config.js")[env];
 const db = {};
 
-const sequelize = new Sequelize(config.database, config.username, config.password, {
+const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  {
     host: config.host,
     dialect: "mysql",
-    timezone: "Asia/Seoul",
+    timezone: "+09:00",
     dialectOptions: {
-        charset: "utf8mb4",
-        dateStrings: true,
-        typeCast: true,
+      charset: "utf8mb4",
+      dateStrings: true,
+      typeCast: true,
     },
-});
+  }
+);
 
 db.sequelize = sequelize;
 
