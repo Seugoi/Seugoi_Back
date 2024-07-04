@@ -1,4 +1,4 @@
-const { User, Study, JoinStudy, sequelize } = require('../models');
+const { User, Study, JoinStudy, viewHistory, sequelize } = require('../models');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -73,6 +73,13 @@ exports.allStudy = async (req, res) => {
             return acc;
         }, {});
 
+        // 조회 횟수 계산
+        const viewCount = await viewHistory.count({
+            where: {
+                study_id: study_id
+            }
+        });
+
         const response = studies.map(study => ({
             ...study.dataValues,
             user: {
@@ -81,7 +88,8 @@ exports.allStudy = async (req, res) => {
                 email: userMap[study.user_id].email,
                 birthday: userMap[study.user_id].birthday,
                 job: userMap[study.user_id].job
-            }
+            },
+            viewCount: viewCount
         }));
 
         res.status(200).json(response);
@@ -129,6 +137,13 @@ exports.idStudy = async (req, res) => {
             return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
         }
 
+        // 조회 횟수 계산
+        const viewCount = await viewHistory.count({
+            where: {
+                study_id: study_id
+            }
+        });
+
         let response = {
             ...study.dataValues,
             user: {
@@ -137,7 +152,8 @@ exports.idStudy = async (req, res) => {
                 email: user.email,
                 birthday: user.birthday,
                 job: user.job
-            }
+            },
+            viewCount: viewCount
         };
 
         res.status(200).json(response);
@@ -178,7 +194,19 @@ exports.keywordStudy = async (req, res) => {
             }
         })
 
-        res.status(200).json(study);
+        // 조회 횟수 계산
+        const viewCount = await viewHistory.count({
+            where: {
+                study_id: study_id
+            }
+        });
+
+        let response = {
+            ...study.dataValues,
+            viewCount: viewCount
+        };
+
+        res.status(200).json(response);
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 검색된 스터디 조회 실패" });
@@ -284,5 +312,27 @@ exports.JoinedStudy = async (req, res) => {
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 가입한 스터디 조회 실패" });
+    }
+}
+
+// 스터디 조회
+exports.viewStudy = async (req, res) => {
+    try {
+        const {
+            user_id,
+            study_id
+        } = req.body;
+
+        // view_history 테이블
+        const view = await viewHistory.create({
+            user_id,
+            study_id
+        });
+
+        res.status(201).json({ message: "스터디 보기 성공" });
+
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 스터디 보기 실패" });
     }
 }
