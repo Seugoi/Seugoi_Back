@@ -3,6 +3,7 @@ const User = require("./users");
 const Study = require("./study");
 const JoinStudy = require("./joinStudy");
 const ChatRoom = require("./chatRoom");
+const UserChatRoom = require("./userChatRoom");
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config.js")[env];
@@ -30,10 +31,12 @@ db.User = User;
 db.Study = Study;
 db.JoinStudy = JoinStudy;
 db.ChatRoom = ChatRoom;
+db.UserChatRoom = UserChatRoom;
 
 User.init(sequelize);
 Study.init(sequelize);
 JoinStudy.init(sequelize);
 ChatRoom.init(sequelize);
+UserChatRoom.init(sequelize);
 
 module.exports = db;
