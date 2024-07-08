@@ -27,13 +27,9 @@ class viewHistory extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
-            updatedAt: false,
-            underscored: false,
             modelName: 'ViewHistory',
             tableName: 'view_history',
             paranoid: false,
-            charset: 'utf8',
-            collate: 'utf8_general_ci',
         });
     }
 }
