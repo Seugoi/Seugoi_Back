@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class viewHistory extends Sequelize.Model {
+class ViewHistory extends Sequelize.Model {
     static init(sequelize) {
         return super.init ({
             id: {
@@ -33,3 +33,5 @@ class viewHistory extends Sequelize.Model {
         });
     }
 }
+
+module.exports = ViewHistory;
