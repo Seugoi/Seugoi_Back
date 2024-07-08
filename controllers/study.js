@@ -1,4 +1,4 @@
-const { User, Study, JoinStudy, viewHistory, sequelize } = require('../models');
+const { User, Study, JoinStudy, ViewHistory, sequelize } = require('../models');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -68,28 +68,30 @@ exports.allStudy = async (req, res) => {
             }
         });
 
+        // 사용자 세부 정보를 사용자 ID로 매핑
         const userMap = users.reduce((acc, user) => {
             acc[user.id] = user;
             return acc;
         }, {});
 
         // 조회 횟수 계산
-        const viewCount = await viewHistory.count({
-            where: {
-                study_id: study_id
-            }
+        // 모든 스터디에 대한 조회 수 가져오기
+        const viewCounts = await ViewHistory.findAll({
+            attributes: ['study_id', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+            group: ['study_id'],
+            raw: true
         });
+
+        // 조회 수를 스터디 ID로 매핑
+        const viewCountMap = viewCounts.reduce((acc, viewCount) => {
+            acc[viewCount.study_id] = viewCount.count;
+            return acc;
+        }, {});
 
         const response = studies.map(study => ({
             ...study.dataValues,
-            user: {
-                id: userMap[study.user_id].id,
-                nickname: userMap[study.user_id].nickname,
-                email: userMap[study.user_id].email,
-                birthday: userMap[study.user_id].birthday,
-                job: userMap[study.user_id].job
-            },
-            viewCount: viewCount
+            user: userMap[study.user_id],
+            viewCount: viewCountMap[study.id] || 0
         }));
 
         res.status(200).json(response);
@@ -138,7 +140,7 @@ exports.idStudy = async (req, res) => {
         }
 
         // 조회 횟수 계산
-        const viewCount = await viewHistory.count({
+        const viewCount = await ViewHistory.count({
             where: {
                 study_id: study_id
             }
@@ -153,7 +155,7 @@ exports.idStudy = async (req, res) => {
                 birthday: user.birthday,
                 job: user.job
             },
-            viewCount: viewCount
+            viewCount: viewCount || 0
         };
 
         res.status(200).json(response);
@@ -194,17 +196,44 @@ exports.keywordStudy = async (req, res) => {
             }
         })
 
-        // 조회 횟수 계산
-        const viewCount = await viewHistory.count({
+        // 검색된 스터디가 없는 경우
+        if (study.length === 0) {
+            return res.status(200).json({ message: "검색 결과 없음" });
+        }
+
+        const userIds = study.map(study => study.user_id);
+        const users = await User.findAll({
+            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
             where: {
-                study_id: study_id
+                id: userIds
             }
         });
 
-        let response = {
+        // 사용자 세부 정보를 사용자 ID로 매핑
+        const userMap = users.reduce((acc, user) => {
+            acc[user.id] = user;
+            return acc;
+        }, {});
+
+        // 조회 횟수 계산
+        // 모든 스터디에 대한 조회 수 가져오기
+        const viewCounts = await ViewHistory.findAll({
+            attributes: ['study_id', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+            group: ['study_id'],
+            raw: true
+        });
+
+        // 조회 수를 스터디 ID로 매핑
+        const viewCountMap = viewCounts.reduce((acc, viewCount) => {
+            acc[viewCount.study_id] = viewCount.count;
+            return acc;
+        }, {});
+
+        const response = study.map(study => ({
             ...study.dataValues,
-            viewCount: viewCount
-        };
+            user: userMap[study.user_id],
+            viewCount: viewCountMap[study.id] || 0
+        }));
 
         res.status(200).json(response);
     } catch(err) {
@@ -324,7 +353,7 @@ exports.viewStudy = async (req, res) => {
         } = req.body;
 
         // view_history 테이블
-        const view = await viewHistory.create({
+        const view = await ViewHistory.create({
             user_id,
             study_id
         });
