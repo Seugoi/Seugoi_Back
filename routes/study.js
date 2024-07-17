@@ -24,5 +24,7 @@ router.get('/search/:keyword', studyMiddleware.keywordStudy); // 검색된 스�
 router.post('/join', studyMiddleware.joinStudy); // 스터디 가입
 router.get('/join/:user_id', studyMiddleware.JoinedStudy); // 내가 가입한 스터디 조회
 router.post('/view', studyMiddleware.viewStudy); // 스터디 조회수
+router.post('/like', studyMiddleware.LikeStudy); // 스터디 좋아요
+router.get('/like/:user_id', studyMiddleware.likedStudy); // 내가 좋아요한 스터디 조회
 
 module.exports = router;
