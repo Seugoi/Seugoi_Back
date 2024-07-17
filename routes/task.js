@@ -18,6 +18,6 @@ const upload = multer({ storage: storage });
 
 router.post('', upload.single('image'), commentMiddleware.createComment); // 과제 댓글 등록
 router.get('', commentMiddleware.allTaskComment); // 댓글 전체 조회
-router.get('/:comment_id', commentMiddleware.idComment); // 특정 댓글 조회
+router.get('/:study_id', commentMiddleware.idComment); // 특정 스터디 댓글 조회
 
 module.exports = router;

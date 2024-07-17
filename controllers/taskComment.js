@@ -59,45 +59,43 @@ exports.allTaskComment = async (req, res) => {
 // 특정 댓글 조회
 exports.idComment = async (req, res) => {
     try {
-        const comment_id = req.params.comment_id;
-        const taskComment = await TaskComment.findOne({
+        const study_id = req.params.study_id;
+        const taskComment = await TaskComment.findAll({
             attributes: [
                 'id', 'user_id', 'study_id',
                 'content', 'image'
             ],
             where: {
-                id: Number(comment_id)
+                study_id: Number(study_id)
             }
         })
 
-        if (!taskComment) {
+        if (taskComment.length === 0) {
             return res.status(404).json({ error: "댓글을 찾을 수 없습니다." });
         }
 
-        // 사용자 정보를 조회
-        const user = await User.findOne({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
-            where: {
-                id: taskComment.user_id
-            }
-        });
+        // 댓글과 작성자 정보 조회
+        const taskCommentsWithUser = await Promise.all(taskComment.map(async (taskComment) => {
+            const user = await User.findOne({
+                attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+                where: {
+                    id: taskComment.user_id
+                }
+            });
 
-        if (!user) {
-            return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
-        }
+            return {
+                ...taskComment.dataValues,
+                user: {
+                    id: user.id,
+                    nickname: user.nickname,
+                    email: user.email,
+                    birthday: user.birthday,
+                    job: user.job
+                }
+            };
+        }));
 
-        const response = {
-            ...taskComment.dataValues,
-            user: {
-                id: user.id,
-                nickname: user.nickname,
-                email: user.email,
-                birthday: user.birthday,
-                job: user.job
-            },
-        };
-
-        res.status(200).json(response);
+        res.status(200).json(taskCommentsWithUser);
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 특정 댓글 조회 실패" });
