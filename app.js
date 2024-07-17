@@ -30,6 +30,10 @@ app.use('/users', users);
 const studys = require('./routes/study');
 app.use('/study', studys);
 
+// 스터디 댓글
+const comments = require('./routes/task');
+app.use('/comment', comments);
+
 app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
 });
