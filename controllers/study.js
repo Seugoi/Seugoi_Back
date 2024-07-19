@@ -48,7 +48,7 @@ exports.createStudy = async (req, res) => {
             Dday: Dday
         });
 
-        return res.status(200).json({ message: '스터디가 성공적으로 생성되었습니다.' });
+        return res.status(201).json({ message: '스터디가 성공적으로 생성되었습니다.' });
     } catch(err) {
         console.error(err);
         return res.status(500).json({ error: '서버 오류로 스터디가 생성되지 않았습니다.' });
@@ -282,8 +282,7 @@ exports.joinStudy = async (req, res) => {
             return res.status(404).json({ error: "스터디를 찾을 수 없습니다." });
         }
 
-        res.status(200).json({ message: "스터디 가입에 성공하였습니다." });
-
+        res.status(201).json({ message: "스터디 가입에 성공하였습니다." });
     } catch(err) {
         console.error(err);
         res.status(500).json({ error : "서버 오류로 스터디 가입 실패" });
@@ -342,7 +341,6 @@ exports.JoinedStudy = async (req, res) => {
         });
 
         res.status(200).json(response);
-
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 가입한 스터디 조회 실패" });
@@ -364,7 +362,6 @@ exports.viewStudy = async (req, res) => {
         });
 
         res.status(200).json({ message: "스터디 보기 성공" });
-
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 스터디 보기 실패" });

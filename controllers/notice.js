@@ -18,7 +18,7 @@ exports.createNotice = async (req, res) => {
             content: content
         });
 
-        return res.status(200).json({ message: "공지가 성공적으로 생성되었습니다." });
+        return res.status(201).json({ message: "공지가 성공적으로 생성되었습니다." });
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 공지가 생성되지 않습니다." });
