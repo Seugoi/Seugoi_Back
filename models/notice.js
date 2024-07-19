@@ -1,13 +1,13 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class LikeStudy extends Sequelize.Model {
+class Notice extends Sequelize.Model {
     static init(sequelize) {
         return super.init ({
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
-                allowNull: false,
+                allowNull: false
             },
             user_id: {
                 type: DataTypes.INTEGER,
@@ -16,23 +16,26 @@ class LikeStudy extends Sequelize.Model {
                     key : 'id'
                 }
             },
-            study_id: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'studys',
-                    key: 'id'
-                }
-            }
+            title: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+            content: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
         }, {
             sequelize,
             timestamps: true,
             createdAt: true,
             updateAt: false,
-            modelName: 'LikeStudy',
-            tableName: 'like_study',
+            modelName: 'Notice',
+            tableName: 'notice',
             paranoid: false,
+            charset: 'utf8',
+            collate: 'utf8_general_ci',
         });
     }
 }
 
-module.exports = LikeStudy;
+module.exports = Notice;

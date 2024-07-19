@@ -8,6 +8,7 @@ const UserChatRoom = require("./userChatRoom");
 const Message = require("./message");
 const TaskComment = require("./taskComment");
 const LikeStudy = require("./likeStudy");
+const Notice = require("./notice");
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config.js")[env];
@@ -40,6 +41,7 @@ db.UserChatRoom = UserChatRoom;
 db.Message = Message;
 db.TaskComment = TaskComment;
 db.LikeStudy = LikeStudy;
+db.Notice = Notice;
 
 User.init(sequelize);
 Study.init(sequelize);
@@ -50,5 +52,6 @@ UserChatRoom.init(sequelize);
 Message.init(sequelize);
 TaskComment.init(sequelize);
 LikeStudy.init(sequelize);
+Notice.init(sequelize);
 
 module.exports = db;

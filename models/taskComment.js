@@ -35,6 +35,7 @@ class TaskComment extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
+            updateAt: false,
             modelName: 'TaskComment',
             tableName: 'task_comment',
             paranoid: false,

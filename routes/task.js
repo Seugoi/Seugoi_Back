@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const commentMiddleware = require('../controllers/taskComment');
+const taskMiddleware = require('../controllers/taskComment');
 const multer = require('multer');
 
 const storage = multer.memoryStorage({
@@ -16,8 +16,8 @@ const storage = multer.memoryStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('', upload.single('image'), commentMiddleware.createComment); // 과제 댓글 등록
-router.get('', commentMiddleware.allTaskComment); // 댓글 전체 조회
-router.get('/:study_id', commentMiddleware.idComment); // 특정 스터디 댓글 조회
+router.post('', upload.single('image'), taskMiddleware.createComment); // 과제 댓글 등록
+router.get('', taskMiddleware.allTaskComment); // 댓글 전체 조회
+router.get('/:study_id', taskMiddleware.idComment); // 특정 스터디 댓글 조회
 
 module.exports = router;

@@ -40,6 +40,7 @@ class User extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
+            updateAt: false,
             modelName: 'User',
             tableName: 'users',
             paranoid: false,
