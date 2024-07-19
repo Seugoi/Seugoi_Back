@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class TaskComment extends Sequelize.Model {
+class Notice extends Sequelize.Model {
     static init(sequelize) {
         return super.init ({
             id: {
@@ -16,28 +16,21 @@ class TaskComment extends Sequelize.Model {
                     key : 'id'
                 }
             },
-            study_id: {
-                type: DataTypes.INTEGER,
-                references:{
-                    model : 'studys',
-                    key : 'id'
-                }
+            title: {
+                type: DataTypes.STRING,
+                allowNull: false
             },
             content: {
                 type: DataTypes.STRING,
-                allowNull: true
+                allowNull: false
             },
-            image: {
-                type: DataTypes.TEXT,
-                allowNull: true
-            }
         }, {
             sequelize,
             timestamps: true,
             createdAt: true,
             updateAt: false,
-            modelName: 'TaskComment',
-            tableName: 'task_comment',
+            modelName: 'Notice',
+            tableName: 'notice',
             paranoid: false,
             charset: 'utf8',
             collate: 'utf8_general_ci',
@@ -45,4 +38,4 @@ class TaskComment extends Sequelize.Model {
     }
 }
 
-module.exports = TaskComment;
+module.exports = Notice;

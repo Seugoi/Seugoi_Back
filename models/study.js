@@ -64,6 +64,7 @@ class Study extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
+            updateAt: false,
             modelName: 'Study',
             tableName: 'studys',
             paranoid: false,

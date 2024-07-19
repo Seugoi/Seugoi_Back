@@ -27,6 +27,7 @@ class ViewHistory extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
+            updateAt: false,
             modelName: 'ViewHistory',
             tableName: 'view_history',
             paranoid: false,

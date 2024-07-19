@@ -27,6 +27,7 @@ class JoinStudy extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true, // 자동으로 created_at 생성
+            updateAt: false,
             modelName: 'JoinStudy',
             tableName: 'joinstudys',
             paranoid: false, // 레코드를 삭제할 때 실제로 데이터베이스에서 삭제됨.

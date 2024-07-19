@@ -19,7 +19,7 @@ exports.createComment = async (req, res) => {
             image: req.file ? req.file.originalname : null
         });
 
-        return res.status(200).json({ message: '댓글이 성공적으로 달렸습니다.' });
+        return res.status(201).json({ message: '댓글이 성공적으로 달렸습니다.' });
     } catch(err) {
         console.error(err);
         return res.status(500).json({ error: '서버 오류로 댓글이 달리지 않았습니다.' });
