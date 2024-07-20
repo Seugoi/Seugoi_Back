@@ -42,7 +42,7 @@ exports.viewedStudy = async (req, res) => {
         const studies = await Study.findAll({
             attributes: [
                 'id', 'user_id',
-                'name', 'image', 'hashTag',
+                'name', 'image', 'category',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 

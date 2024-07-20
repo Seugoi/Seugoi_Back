@@ -63,7 +63,7 @@ exports.likedStudy = async (req, res) => {
         const studies = await Study.findAll({
             attributes: [
                 'id', 'user_id', 'name',
-                'image', 'hashTag',
+                'image', 'category', 'peopleNumber',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 
