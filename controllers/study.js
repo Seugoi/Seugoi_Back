@@ -5,8 +5,8 @@ const { Sequelize } = require('sequelize');
 // 스터디 생성
 exports.createStudy = async (req, res) => {
     try {
-        const {
-            user_id, name, hashTag, 
+        let {
+            user_id, name, category, peopleNumber,
             endDate, title, 
             simple_content, 
             study_content, 
@@ -14,6 +14,8 @@ exports.createStudy = async (req, res) => {
             recom_content
         } = req.body;
 
+        user_id = Number(user_id);
+        peopleNumber = Number(peopleNumber);
         const user = await User.findByPk(user_id);
         if (!user) {
             return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
@@ -21,7 +23,7 @@ exports.createStudy = async (req, res) => {
 
         const parsedStudyContent = JSON.parse(study_content);
         const parsedRecomContent = JSON.parse(recom_content);
-        const parsedHashTag = JSON.parse(hashTag);
+        const parsedcategory = JSON.parse(category);
 
         // endDate 유효성 검사 및 변환
         const momentEndDate = moment(endDate, 'YYYY-MM-DD', true);
@@ -36,10 +38,11 @@ exports.createStudy = async (req, res) => {
 
         // 스터디 생성
         const createstudy = await Study.create({
-            user_id: Number(user_id),
+            user_id: user_id,
             image: req.file ? req.file.originalname : null,
             name, title,
-            hashTag: parsedHashTag,
+            category: parsedcategory,
+            peopleNumber,
             endDate: extractedEndDate,
             simple_content,
             study_content: parsedStudyContent,
@@ -109,7 +112,7 @@ exports.idStudy = async (req, res) => {
         const study = await Study.findOne({
             attributes: [
                 'id', 'user_id', 'name',
-                'image', 'hashTag',
+                'image', 'category', 'peopleNumber',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 
@@ -180,7 +183,7 @@ exports.keywordStudy = async (req, res) => {
         const study = await Study.findAll({
             attributes: [
                 'id', 'user_id',
-                'name', 'image', 'hashTag',
+                'name', 'image', 'category', 'peopleNumber',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 
@@ -194,7 +197,7 @@ exports.keywordStudy = async (req, res) => {
                     sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), {
                         [Sequelize.Op.like]: searchString
                     }),
-                    sequelize.where(sequelize.fn('LOWER', sequelize.cast(sequelize.col('hashTag'), 'CHAR')), {
+                    sequelize.where(sequelize.fn('LOWER', sequelize.cast(sequelize.col('category'), 'CHAR')), {
                         [Sequelize.Op.like]: searchString
                     })
                 ]

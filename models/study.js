@@ -24,9 +24,13 @@ class Study extends Sequelize.Model {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            hashTag: {
+            category: {
                 type: DataTypes.JSON,
                 allowNull: false
+            },
+            peopleNumber: {
+                type: DataTypes.INTEGER,
+                allowNull: true
             },
             endDate: {
                 type: DataTypes.STRING,
