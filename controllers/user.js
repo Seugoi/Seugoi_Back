@@ -1,5 +1,6 @@
-const { User, Study } = require('../models');
+const { User, Study, LikeStudy, Notice, JoinStudy } = require('../models');
 const crypto = require('crypto'); // 비밀번호 암호화
+const axios = require("axios");
 
 // 회원가입
 exports.signupPostMid = async (req, res) => {
@@ -88,6 +89,42 @@ exports.loginPostMid = async (req, res) => {
   }
 };
 
+// 카카오 OAuth 로그인
+exports.kakaoLogin = async (req, res) => {
+  const REST_API_KEY = `${process.env.KAKAO_REST_API_KEY}`;
+  const REDIRECT_URI = `${process.env.KAKAO_REDIRECT_URI}`;
+  const code = req.query.code; // 인가 코드
+
+  try {
+    const tokenResponse = await axios.post("https://kauth.kakao.com/oauth/token", null, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      params: {
+        grant_type: "authorization_code",
+        client_id: REST_API_KEY,
+        redirect_uri: REDIRECT_URI,
+        code: code,
+      },
+    });
+
+    let accessToken = tokenResponse.data.access_token;
+
+    const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    });
+
+    console.log(userResponse.data);
+    res.status(200).json(userResponse.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "서버 오류로 카카오 로그인 실패" });
+  }
+}
+
 // 모든 유저 조회
 exports.allUser = async (req, res) => {
   try {
@@ -155,13 +192,13 @@ exports.nicknamePatchMid = async (req, res) => {
 // 내가 작성한 스터디 조회
 exports.userStudy = async (req, res) => {
   try {
-      const user_id = req.params.user_id;
+      const user_id = Number(req.params.user_id);
 
       const study = await Study.findAll({
           attributes: [
               'id', 'user_id',
               'image',
-              'endData', 'title', 
+              'endDate', 'title', 
               'simple_content', 
               'study_content', 
               'detail_content', 
@@ -182,5 +219,186 @@ exports.userStudy = async (req, res) => {
   } catch(err) {
       console.error(err);
       res.status(500).json({ error: "서버 오류로 내가 작성한 스터디 조회 실패" });
+  }
+}
+
+// 내가 찜한 스터디 조회
+exports.userLikeStudy = async (req, res) => {
+  try {
+      const user_id = Number(req.params.user_id);
+
+      // 사용자가 좋아요를 누른 스터디 ID 목록 조회
+      const likedStudies = await LikeStudy.findAll({
+          attributes: ['study_id'],
+          where: {
+              user_id: user_id
+          }
+      });
+
+      if (likedStudies.length === 0) {
+          return res.status(200).json({ message: "좋아요를 누른 스터디가 없습니다." });
+      }
+
+      const studyIds = likedStudies.map(like => like.study_id);
+
+      // 좋아요를 누른 스터디들의 세부 정보 조회
+      const studies = await Study.findAll({
+          attributes: [
+              'id', 'user_id', 'name',
+              'image', 'category', 'peopleNumber',
+              'endDate', 'title', 
+              'simple_content', 
+              'study_content', 
+              'detail_content', 
+              'recom_content',
+              'Dday',
+              'join_people_id'
+          ],
+          where: {
+              id: studyIds
+          }
+      });
+
+      // 각 스터디의 작성자 정보와 조회 횟수 및 좋아요 여부 조회
+      const response = await Promise.all(studies.map(async (study) => {
+          const user = await User.findOne({
+              attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+              where: {
+                  id: study.user_id
+              }
+          });
+
+          const viewCount = await ViewHistory.count({
+              where: {
+                  study_id: study.id
+              }
+          });
+
+          return {
+              ...study.dataValues,
+              user: {
+                  id: user.id,
+                  nickname: user.nickname,
+                  email: user.email,
+                  birthday: user.birthday,
+                  job: user.job
+              },
+              viewCount: viewCount || 0,
+              liked: true
+          };
+      }));
+
+      res.status(200).json(response);
+
+  } catch(err) {
+      console.error(err);
+      res.status(500).json({ error: "서버 오류로 찜한 스터디 조회 실패" });
+  }
+}
+
+// 내가 가입한 스터디 조회
+exports.userJoinStudy = async (req, res) => {
+  try {
+      const user_id = Number(req.params.user_id);
+
+      if (!user_id) {
+          return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+      }
+
+      const joinedStudy = await JoinStudy.findAll({
+          attributes: [
+              'id',
+              'user_id',
+              'study_id'
+          ],
+          where: {
+              user_id: user_id
+          }
+      })
+
+      if (joinedStudy.length === 0) {
+          return res.status(200).json({ message: "가입한 스터디가 없습니다." });
+      }
+
+      const studyId = joinedStudy.map(join => join.study_id);
+
+      const studies = await Study.findAll({
+          attributes: [
+              'id', 'user_id',
+              'name', 'image', 'category', 'peopleNumber',
+              'endDate', 'title', 
+              'simple_content', 
+              'study_content', 
+              'detail_content', 
+              'recom_content',
+              'Dday',
+              'join_people_id'
+          ],
+          where: {
+              id: studyId
+          }
+      });
+
+      const response = joinedStudy.map(join => {
+          const study = studies.find(study => study.id === join.study_id);
+          return {
+              ...join.dataValues,
+              study: study ? study.dataValues : null
+          };
+      });
+
+      res.status(200).json(response);
+  } catch(err) {
+      console.error(err);
+      res.status(500).json({ error: "서버 오류로 가입한 스터디 조회 실패" });
+  }
+}
+
+// 내가 쓴 공지 조회
+exports.userNotice = async (req, res) => {
+  try {
+      const user_id = Number(req.params.user_id);
+
+      const notices = await Notice.findAll({
+          attributes: [
+              'id', 'user_id', 'title', 'content'
+          ],
+          where: {
+              user_id: user_id
+          }
+      })
+
+      if(notices.length === 0) {
+        return res.status(200).json({ message: "내가 쓴 공지글이 존재하지 않습니다." });
+      }
+
+      const user = await User.findByPk(user_id);
+      if (!user) {
+          return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
+      }
+
+      const userIds = notices.map(notice => notice.user_id);
+      const users = await User.findAll({
+          attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+          where: {
+              id: userIds
+          }
+      });
+
+      // 사용자 세부 정보를 사용자 ID로 매핑
+      const userMap = users.reduce((acc, user) => {
+          acc[user.id] = user;
+          return acc;
+      }, {});
+
+      const response = notices.map(notice => ({
+          ...notice.dataValues,
+          user: userMap[notice.user_id]
+      }))
+
+      res.status(200).json(response);
+  } catch(err) {
+      console.error(err);
+      res.status(500).json({ error: "서버 오류로 내가 쓴 공지 조회 실패" });
   }
 }
