@@ -1,6 +1,7 @@
 const { User, Study, LikeStudy, Notice, JoinStudy } = require('../models');
 const crypto = require('crypto'); // 비밀번호 암호화
 const axios = require("axios");
+require('dotenv').config();
 
 // 회원가입
 exports.signupPostMid = async (req, res) => {
@@ -91,10 +92,10 @@ exports.loginPostMid = async (req, res) => {
 
 // 카카오 OAuth 로그인
 exports.kakaoLogin = async (req, res) => {
-  const REST_API_KEY = `${process.env.KAKAO_REST_API_KEY}`;
-  const REDIRECT_URI = `${process.env.KAKAO_REDIRECT_URI}`;
-  const code = req.query.code; // 인가 코드
-
+  const REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+  const REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
+  const code = req.body.code;
+  
   try {
     const tokenResponse = await axios.post("https://kauth.kakao.com/oauth/token", null, {
       headers: {
@@ -109,19 +110,52 @@ exports.kakaoLogin = async (req, res) => {
     });
 
     let accessToken = tokenResponse.data.access_token;
+    const userData = await userInfo(accessToken);
 
+    if (userData) {
+      const kakao_id = userData.id;
+      const { nickname, profile_image: profile_img_url } = userData.properties;
+
+      // 회원이 있는지 확인
+      const user = await User.findOne({ where: { kakao_id } });
+
+      if (user) {
+        console.log("카카오 로그인 성공", user.dataValues);
+        res.status(200).json({ message: "카카오 로그인 성공", user });
+      } else {
+        const newUser = await User.create({ kakao_id, nickname, profile_img_url });
+        console.log("카카오 로그인 성공", newUser.dataValues);
+        res.status(200).json({ message: "카카오 로그인 성공", user: newUser });
+      }
+
+    } else {
+      res.status(500).json({ error: "카카오 사용자 정보를 가져오는데 실패했습니다." });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "서버 오류로 카카오 로그인 실패" });
+  }
+}
+
+// 카카오 사용자 정보
+const userInfo = async (accessToken) => {
+  try {
     const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
       },
     });
-
-    console.log(userResponse.data);
-    res.status(200).json(userResponse.data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "서버 오류로 카카오 로그인 실패" });
+    if (userResponse.status === 200) {
+      return userResponse.data;
+    } else {
+      console.log("사용자 정보를 가져오는데 실패했습니다: ", userResponse.status);
+      return null;
+    }
+  } catch(err) {
+    console.log(err);
+    return null;
   }
 }
 
@@ -129,7 +163,7 @@ exports.kakaoLogin = async (req, res) => {
 exports.allUser = async (req, res) => {
   try {
       const user = await User.findAll({
-        attributes: ['id', 'nickname', 'email', 'birthday', 'job']
+        attributes: ['id', 'nickname', 'profile_img_url']
       });
       res.json(user);
   } catch(err) {
@@ -144,50 +178,24 @@ exports.userInfoGetMind = async (req, res) => {
     const user_id = req.params.user_id;
 
     const user = await User.findOne({
-      attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+      attributes: ['id', 'nickname', 'profile_img_url'],
       where: {
         id: user_id
       }
     })
-    let response = {...user.dataValues};
-
-    res.json(response);
+    
+    if (user) {
+      let response = { ...user.dataValues };
+      res.json(response);
+    } else {
+      res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
+    }
 
   } catch(err) {
     console.error(err);
     res.status(500).json({ error: "서버 오류로 사용자 정보 조회 실패" })
   }
 }
-
-// 아이디 수정
-exports.nicknamePatchMid = async (req, res) => {
-  try {
-      const { user_id, nickname } = req.body;
-
-      // 아이디 사용자가 존재하는지 확인
-      const checkNickname = await User.findOne({
-        where: {
-          nickname,
-        },
-      });
-
-      if(checkNickname && checkNickname.dataValues.id != user_id){
-        return res.status(409).json({ error: '이미 존재하는 아이디입니다.' });
-      }
-
-      const user = await User.update({
-        nickname,
-      }, {
-        where : { id: user_id }
-      })
-
-      return res.status(200).json({ message: '아이디 성공적으로 수정'});
-
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: '서버 오류로 아이디 수정 실패' });
-  }
-};
 
 // 내가 작성한 스터디 조회
 exports.userStudy = async (req, res) => {
@@ -262,7 +270,7 @@ exports.userLikeStudy = async (req, res) => {
       // 각 스터디의 작성자 정보와 조회 횟수 및 좋아요 여부 조회
       const response = await Promise.all(studies.map(async (study) => {
           const user = await User.findOne({
-              attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+              attributes: ['id', 'nickname', 'profile_img_url'],
               where: {
                   id: study.user_id
               }
@@ -279,9 +287,7 @@ exports.userLikeStudy = async (req, res) => {
               user: {
                   id: user.id,
                   nickname: user.nickname,
-                  email: user.email,
-                  birthday: user.birthday,
-                  job: user.job
+                  profile_img_url: user.profile_img_url
               },
               viewCount: viewCount || 0,
               liked: true
@@ -379,7 +385,7 @@ exports.userNotice = async (req, res) => {
 
       const userIds = notices.map(notice => notice.user_id);
       const users = await User.findAll({
-          attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+          attributes: ['id', 'nickname', 'profile_img_url'],
           where: {
               id: userIds
           }

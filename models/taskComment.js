@@ -19,7 +19,7 @@ class TaskComment extends Sequelize.Model {
             study_id: {
                 type: DataTypes.INTEGER,
                 references:{
-                    model : 'studys',
+                    model : 'studies',
                     key : 'id'
                 }
             },
@@ -35,7 +35,7 @@ class TaskComment extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
-            updateAt: false,
+            updatedAt: false,
             modelName: 'TaskComment',
             tableName: 'task_comment',
             paranoid: false,

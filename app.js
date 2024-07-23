@@ -27,8 +27,8 @@ const users = require('./routes/user');
 app.use('/users', users);
 
 // 스터디
-const studys = require('./routes/study');
-app.use('/study', studys);
+const studies = require('./routes/study');
+app.use('/study', studies);
 
 // 스터디 댓글
 const comments = require('./routes/task');

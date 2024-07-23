@@ -28,7 +28,7 @@ class Notice extends Sequelize.Model {
             sequelize,
             timestamps: true,
             createdAt: true,
-            updateAt: false,
+            updatedAt: false,
             modelName: 'Notice',
             tableName: 'notice',
             paranoid: false,
