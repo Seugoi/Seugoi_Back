@@ -9,38 +9,25 @@ class User extends Sequelize.Model {
                 primaryKey: true,
                 allowNull: false,
             },
+            kakao_id: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: true
+            },
             nickname: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             },
-            password: {
+            profile_img_url: {
                 type: DataTypes.STRING,
-                allowNull: false,
-            },
-            salt: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            email: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            },
-            birthday: {
-                type: DataTypes.STRING,
-                allowNull: false
-            },
-            job: {
-                type: DataTypes.ENUM,
-                values: ['학생', '교사', '회사원'],
-                allowNull: false
+                allowNull: true
             }
         }, {
             sequelize,
             timestamps: true,
             createdAt: true,
-            updateAt: false,
+            updatedAt: false,
             modelName: 'User',
             tableName: 'users',
             paranoid: false,
