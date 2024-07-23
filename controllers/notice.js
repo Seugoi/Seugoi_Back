@@ -32,7 +32,7 @@ exports.allNotice = async (req, res) => {
 
         const userIds = notices.map(notice => notice.user_id);
         const users = await User.findAll({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: userIds
             }
@@ -87,9 +87,7 @@ exports.idNotice = async (req, res) => {
             user: {
                 id: user.id,
                 nickname: user.nickname,
-                email: user.email,
-                birthday: user.birthday,
-                job: user.job
+                profile_img_url: user.profile_img_url
             }
         }
 

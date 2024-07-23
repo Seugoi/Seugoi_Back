@@ -65,7 +65,7 @@ exports.allStudy = async (req, res) => {
 
         const userIds = studies.map(study => study.user_id);
         const users = await User.findAll({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: userIds
             }
@@ -132,7 +132,7 @@ exports.idStudy = async (req, res) => {
 
         // 사용자 정보를 조회
         const user = await User.findOne({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: study.user_id
             }
@@ -158,9 +158,7 @@ exports.idStudy = async (req, res) => {
             user: {
                 id: user.id,
                 nickname: user.nickname,
-                email: user.email,
-                birthday: user.birthday,
-                job: user.job
+                profile_img_url: user.profile_img_url
             },
             viewCount: viewCount || 0,
             liked: !!like
@@ -211,7 +209,7 @@ exports.keywordStudy = async (req, res) => {
 
         const userIds = study.map(study => study.user_id);
         const users = await User.findAll({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: userIds
             }

@@ -30,9 +30,13 @@ exports.createComment = async (req, res) => {
 exports.allTaskComment = async (req, res) => {
     try {
         const comments = await TaskComment.findAll();
+        if (comments.length === 0) {
+            res.status(200).json({ message: "현재 작성된 댓글이 없습니다." });
+        }
+
         const userIds = comments.map(comment => comment.user_id);
         const users = await User.findAll({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: userIds
             }
@@ -88,9 +92,7 @@ exports.idComment = async (req, res) => {
                 user: {
                     id: user.id,
                     nickname: user.nickname,
-                    email: user.email,
-                    birthday: user.birthday,
-                    job: user.job
+                    profile_img_url: user.profile_img_url
                 }
             };
         }));
