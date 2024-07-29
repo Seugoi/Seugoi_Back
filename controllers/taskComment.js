@@ -12,12 +12,15 @@ exports.createComment = async (req, res) => {
             return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
         }
 
+        const images = req.files ? req.files.map(file => file.originalname) : [];
+
         const createcomment = await TaskComment.create({
             user_id: Number(user_id),
             study_id: Number(study_id),
-            content: content,
-            image: req.file ? req.file.originalname : null
+            content,
+            image: JSON.stringify(images)
         });
+
 
         return res.status(201).json({ message: '댓글이 성공적으로 달렸습니다.' });
     } catch(err) {
@@ -26,10 +29,11 @@ exports.createComment = async (req, res) => {
     }
 }
 
-// 스터디 댓글 모두 조회
+// 댓글 모두 조회
 exports.allTaskComment = async (req, res) => {
     try {
         const comments = await TaskComment.findAll();
+
         if (comments.length === 0) {
             res.status(200).json({ message: "현재 작성된 댓글이 없습니다." });
         }
@@ -49,8 +53,14 @@ exports.allTaskComment = async (req, res) => {
         }, {});
 
         const response = comments.map(comment => ({
-            ...comment.dataValues,
-            user: userMap[comment.user_id]
+            comment: {
+                id: comment.id,
+                user_id: comment.user_id,
+                study_id: comment.study_id,
+                content: comment.content,
+                images: JSON.parse(comment.image || '[]'),
+                user: userMap[comment.user_id]
+            },
         }));
 
         res.status(200).json(response);
@@ -60,17 +70,17 @@ exports.allTaskComment = async (req, res) => {
     }
 }
 
-// 특정 댓글 조회
+// 스터디별 모든 댓글 조회
 exports.idComment = async (req, res) => {
     try {
-        const study_id = req.params.study_id;
+        const study_id = Number(req.params.study_id);
         const taskComment = await TaskComment.findAll({
             attributes: [
                 'id', 'user_id', 'study_id',
                 'content', 'image'
             ],
             where: {
-                study_id: Number(study_id)
+                study_id: study_id
             }
         })
 
@@ -81,19 +91,25 @@ exports.idComment = async (req, res) => {
         // 댓글과 작성자 정보 조회
         const taskCommentsWithUser = await Promise.all(taskComment.map(async (taskComment) => {
             const user = await User.findOne({
-                attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+                attributes: ['id', 'nickname', 'profile_img_url'],
                 where: {
                     id: taskComment.user_id
                 }
             });
 
             return {
-                ...taskComment.dataValues,
-                user: {
-                    id: user.id,
-                    nickname: user.nickname,
-                    profile_img_url: user.profile_img_url
-                }
+                comment: {
+                    id: taskComment.id,
+                    user_id: taskComment.user_id,
+                    study_id: taskComment.study_id,
+                    content: taskComment.content,
+                    images: JSON.parse(taskComment.image || '[]'),
+                    user: {
+                        id: user.id,
+                        nickname: user.nickname,
+                        profile_img_url: user.profile_img_url
+                    }
+                },
             };
         }));
 

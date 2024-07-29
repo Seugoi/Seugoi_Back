@@ -29,7 +29,14 @@ class TaskComment extends Sequelize.Model {
             },
             image: {
                 type: DataTypes.TEXT,
-                allowNull: true
+                allowNull: true,
+                get() {
+                    const rawValue = this.getDataValue('image');
+                    return rawValue ? JSON.parse(rawValue) : [];
+                },
+                set(value) {
+                    this.setDataValue('image', JSON.stringify(value));
+                }
             }
         }, {
             sequelize,
