@@ -4,7 +4,7 @@ const { User, Notice } = require("../models");
 exports.createNotice = async (req, res) => {
     try {
         const {
-            user_id, title, content
+            user_id, study_id, title, content
         } = req.body;
 
         const user = await User.findByPk(user_id);
@@ -14,8 +14,9 @@ exports.createNotice = async (req, res) => {
 
         const createNotice = await Notice.create({
             user_id: Number(user_id),
-            title: title,
-            content: content
+            study_id,
+            title,
+            content
         });
 
         return res.status(201).json({ message: "공지가 성공적으로 생성되었습니다." });
@@ -25,10 +26,17 @@ exports.createNotice = async (req, res) => {
     }
 }
 
-// 모든 공지 조회
-exports.allNotice = async (req, res) => {
+// 스터디별 모든 공지 조회
+exports.studyAllNotice = async (req, res) => {
+    const studyIds = req.params.study_id;
+
     try {
-        const notices = await Notice.findAll();
+        const notices = await Notice.findAll({
+            attributes: ['id', 'user_id', 'study_id', 'title', 'content'],
+            where: {
+                study_id: studyIds
+            }
+        });
 
         const userIds = notices.map(notice => notice.user_id);
         const users = await User.findAll({
@@ -62,9 +70,7 @@ exports.idNotice = async (req, res) => {
         const notice_id = req.params.notice_id;
 
         const notice = await Notice.findOne({
-            attributes: [
-                'id', 'user_id', 'title', 'content'
-            ],
+            attributes: ['id', 'user_id', 'study_id', 'title', 'content'],
             where: {
                 id: notice_id
             }
@@ -76,7 +82,7 @@ exports.idNotice = async (req, res) => {
 
         // 사용자 정보를 조회
         const user = await User.findOne({
-            attributes: ['id', 'nickname', 'email', 'birthday', 'job'],
+            attributes: ['id', 'nickname', 'profile_img_url'],
             where: {
                 id: notice.user_id
             }
