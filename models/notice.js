@@ -16,6 +16,13 @@ class Notice extends Sequelize.Model {
                     key : 'id'
                 }
             },
+            study_id: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'studies',
+                    key: 'id'
+                }
+            },
             title: {
                 type: DataTypes.STRING,
                 allowNull: false
