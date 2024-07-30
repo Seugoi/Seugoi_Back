@@ -30,7 +30,7 @@ class Notice extends Sequelize.Model {
             content: {
                 type: DataTypes.STRING,
                 allowNull: false
-            },
+            }
         }, {
             sequelize,
             timestamps: true,

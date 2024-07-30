@@ -24,10 +24,10 @@ exports.viewStudy = async (req, res) => {
 // 조회한 스터디 조회(최근순)
 exports.viewedStudy = async (req, res) => {
     try {
-        const user_id = Number(req.params.user_id);
+        const user_id = req.params.user_id;
 
         const views = await ViewHistory.findAll({
-            attributes: ['user_id', 'study_id', 'createdAt'],
+            attributes: ['id', 'user_id', 'study_id', 'createdAt'],
             where: {
                 user_id: user_id
             },

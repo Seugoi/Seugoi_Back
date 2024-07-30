@@ -26,6 +26,8 @@ router.post('/join', joinMiddleware.joinStudy); // 스터디 가입
 router.post('/like', likeMiddleware.LikeStudy); // 스터디 좋아요
 
 router.post('/view', viewMiddleware.viewStudy); // 스터디 조회수
-router.get('/view/:user_id', viewMiddleware.viewedStudy); // 본 스터디 조회
+router.get('/:user_id/view', viewMiddleware.viewedStudy); // 본 스터디 조회
+
+router.get('/:study_id/all', studyMiddleware.studyAllNoticeAndTask); // 스터디별 과제와 공지 모두 조회(최신순)
 
 module.exports = router;

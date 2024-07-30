@@ -1,4 +1,6 @@
-const { User, Study, ViewHistory, LikeStudy, sequelize } = require('../models');
+const { User, Study, LikeStudy, Notice, Task, sequelize } = require('../models');
+const { getUserMap } = require('../utils/getUserMap');
+const { getViewCountMap } = require('../utils/getViewCountMap');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -64,37 +66,15 @@ exports.allStudy = async (req, res) => {
         const studies = await Study.findAll();
 
         const userIds = studies.map(study => study.user_id);
-        const users = await User.findAll({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: userIds
-            }
-        });
+        const studyIds = studies.map(study => study.id);
 
-        // 사용자 세부 정보를 사용자 ID로 매핑
-        const userMap = users.reduce((acc, user) => {
-            acc[user.id] = user;
-            return acc;
-        }, {});
-
-        // 조회 횟수 계산
-        // 모든 스터디에 대한 조회 수 가져오기
-        const viewCounts = await ViewHistory.findAll({
-            attributes: ['study_id', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
-            group: ['study_id'],
-            raw: true
-        });
-
-        // 조회 수를 스터디 ID로 매핑
-        const viewCountMap = viewCounts.reduce((acc, viewCount) => {
-            acc[viewCount.study_id] = viewCount.count;
-            return acc;
-        }, {});
+        const userMap = await getUserMap(userIds);
+        const viewCountMap = await getViewCountMap(studyIds);
 
         const response = studies.map(study => ({
             ...study.dataValues,
             user: userMap[study.user_id],
-            viewCount: viewCountMap[study.id] || 0
+            viewCount: viewCountMap[study.id] || 0,
         }));
 
         res.status(200).json(response);
@@ -130,36 +110,13 @@ exports.idStudy = async (req, res) => {
             return res.status(404).json({ error: "스터디를 찾을 수 없습니다." });
         }
 
-        // 사용자 정보를 조회
-        const user = await User.findOne({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: study.user_id
-            }
-        });
+        const userMap = await getUserMap([study.user_id]);
+        const viewCount = await getViewCountMap(study_id);
+        const like = await LikeStudy.findOne({ where: { user_id: study.user_id, study_id } });
 
-        // 조회 횟수 계산
-        const viewCount = await ViewHistory.count({
-            where: {
-                study_id: study_id
-            }
-        });
-
-        // 좋아요 여부
-        const like = await LikeStudy.findOne({
-            where: {
-                user_id: study.user_id,
-                study_id: study_id
-            }
-        });
-
-        let response = {
+        const response = {
             ...study.dataValues,
-            user: {
-                id: user.id,
-                nickname: user.nickname,
-                profile_img_url: user.profile_img_url
-            },
+            user: userMap[study.user_id],
             viewCount: viewCount || 0,
             liked: !!like
         };
@@ -178,7 +135,7 @@ exports.keywordStudy = async (req, res) => {
 
         let searchString = `%${keyword}%`;
 
-        const study = await Study.findAll({
+        const studies = await Study.findAll({
             attributes: [
                 'id', 'user_id',
                 'name', 'image', 'category', 'peopleNumber',
@@ -203,39 +160,17 @@ exports.keywordStudy = async (req, res) => {
         })
 
         // 검색된 스터디가 없는 경우
-        if (study.length === 0) {
+        if (studies.length === 0) {
             return res.status(200).json({ message: "검색 결과 없음" });
         }
 
-        const userIds = study.map(study => study.user_id);
-        const users = await User.findAll({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: userIds
-            }
-        });
+        const userIds = studies.map(study => study.user_id);
+        const studyIds = studies.map(study => study.id);
 
-        // 사용자 세부 정보를 사용자 ID로 매핑
-        const userMap = users.reduce((acc, user) => {
-            acc[user.id] = user;
-            return acc;
-        }, {});
+        const userMap = await getUserMap(userIds);
+        const viewCountMap = await getViewCountMap(studyIds);
 
-        // 조회 횟수 계산
-        // 모든 스터디에 대한 조회 수 가져오기
-        const viewCounts = await ViewHistory.findAll({
-            attributes: ['study_id', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
-            group: ['study_id'],
-            raw: true
-        });
-
-        // 조회 수를 스터디 ID로 매핑
-        const viewCountMap = viewCounts.reduce((acc, viewCount) => {
-            acc[viewCount.study_id] = viewCount.count;
-            return acc;
-        }, {});
-
-        const response = study.map(study => ({
+        const response = studies.map(study => ({
             ...study.dataValues,
             user: userMap[study.user_id],
             viewCount: viewCountMap[study.id] || 0
@@ -245,5 +180,52 @@ exports.keywordStudy = async (req, res) => {
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류로 검색된 스터디 조회 실패" });
+    }
+}
+
+// 스터디별 과제와 공지 모두 조회(최신순) type으로 구분 => task, notice
+exports.studyAllNoticeAndTask = async (req, res) => {
+    try {
+        // 과제 조회
+        const tasks = await Task.findAll({
+            attributes: ['id', 'user_id', 'study_id', 'title', 'description', 'createdAt'],
+            where: { study_id: studyIds }
+        });
+
+        // 공지 조회
+        const notices = await Notice.findAll({
+            attributes: ['id', 'user_id', 'study_id', 'title', 'content', 'createdAt'],
+            where: { study_id: studyIds }
+        });
+
+        const userIds = [
+            ...new Set([
+                ...notices.map(notice => notice.user_id),
+                ...tasks.map(task => task.user_id)
+            ])
+        ];
+
+        const userMap = await getUserMap(userIds);
+
+        const combined = [
+            ...notices.map(notice => ({
+                ...notice.dataValues,
+                type: 'notice',
+                user: userMap[notice.user_id]
+            })),
+            ...tasks.map(task => ({
+                ...task.dataValues,
+                type: 'task',
+                user: userMap[task.user_id]
+            }))
+        ];
+
+        // 최신 순으로 정렬
+        const sortedResponse = combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.status(200).json(sortedResponse);
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 스터디별 과제와 공지 조회 실패" });
     }
 }
