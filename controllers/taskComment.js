@@ -1,4 +1,5 @@
 const { User, TaskComment } = require('../models');
+const { getUserMap } = require('../utils/user');
 
 // 스터디 댓글 등록
 exports.createComment = async (req, res) => {
@@ -39,28 +40,15 @@ exports.allTaskComment = async (req, res) => {
         }
 
         const userIds = comments.map(comment => comment.user_id);
-        const users = await User.findAll({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: userIds
-            }
-        });
-
-        // 사용자 세부 정보를 사용자 ID로 매핑
-        const userMap = users.reduce((acc, user) => {
-            acc[user.id] = user;
-            return acc;
-        }, {});
+        const userMap = await getUserMap(userIds);
 
         const response = comments.map(comment => ({
-            comment: {
-                id: comment.id,
-                user_id: comment.user_id,
-                study_id: comment.study_id,
-                content: comment.content,
-                images: JSON.parse(comment.image || '[]'),
-                user: userMap[comment.user_id]
-            },
+            id: comment.id,
+            user_id: comment.user_id,
+            study_id: comment.study_id,
+            content: comment.content,
+            images: JSON.parse(comment.image || '[]'),
+            user: userMap[comment.user_id]
         }));
 
         res.status(200).json(response);
@@ -90,26 +78,15 @@ exports.idComment = async (req, res) => {
 
         // 댓글과 작성자 정보 조회
         const taskCommentsWithUser = await Promise.all(taskComment.map(async (taskComment) => {
-            const user = await User.findOne({
-                attributes: ['id', 'nickname', 'profile_img_url'],
-                where: {
-                    id: taskComment.user_id
-                }
-            });
+            const userMap = await getUserMap([taskComment.user_id]);
 
             return {
-                comment: {
-                    id: taskComment.id,
-                    user_id: taskComment.user_id,
-                    study_id: taskComment.study_id,
-                    content: taskComment.content,
-                    images: JSON.parse(taskComment.image || '[]'),
-                    user: {
-                        id: user.id,
-                        nickname: user.nickname,
-                        profile_img_url: user.profile_img_url
-                    }
-                },
+                id: taskComment.id,
+                user_id: taskComment.user_id,
+                study_id: taskComment.study_id,
+                content: taskComment.content,
+                images: JSON.parse(taskComment.image || '[]'),
+                user: userMap[taskComment.user_id]
             };
         }));
 

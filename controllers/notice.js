@@ -1,4 +1,5 @@
 const { User, Notice } = require("../models");
+const { getUserMap } = require('../utils/user');
 
 // 공지 생성
 exports.createNotice = async (req, res) => {
@@ -39,18 +40,7 @@ exports.studyAllNotice = async (req, res) => {
         });
 
         const userIds = notices.map(notice => notice.user_id);
-        const users = await User.findAll({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: userIds
-            }
-        });
-
-        // 사용자 세부 정보를 사용자 ID로 매핑
-        const userMap = users.reduce((acc, user) => {
-            acc[user.id] = user;
-            return acc;
-        }, {});
+        const userMap = await getUserMap(userIds);
 
         const response = notices.map(notice => ({
             ...notice.dataValues,
@@ -64,7 +54,7 @@ exports.studyAllNotice = async (req, res) => {
     }
 }
 
-// 특정 과제 조회
+// 특정 공지 조회
 exports.idNotice = async (req, res) => {
     try {
         const notice_id = req.params.notice_id;
@@ -81,20 +71,11 @@ exports.idNotice = async (req, res) => {
         }
 
         // 사용자 정보를 조회
-        const user = await User.findOne({
-            attributes: ['id', 'nickname', 'profile_img_url'],
-            where: {
-                id: notice.user_id
-            }
-        });
+        const userMap = await getUserMap([notice.user_id]);
 
         const response = {
             ...notice.dataValues,
-            user: {
-                id: user.id,
-                nickname: user.nickname,
-                profile_img_url: user.profile_img_url
-            }
+            user: userMap[notice.user_id]
         }
 
         res.status(200).json(response);
