@@ -18,7 +18,7 @@ class Study extends Sequelize.Model {
             },
             image: {
                 type: DataTypes.TEXT,
-                allowNull: false
+                allowNull: true
             },
             name: {
                 type: DataTypes.STRING,

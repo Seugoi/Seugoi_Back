@@ -4,17 +4,22 @@ const viewMiddleware = require('../controllers/viewHistory');
 const likeMiddleware = require('../controllers/likeStudy');
 const joinMiddleware= require('../controllers/joinStudy');
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
-const storage = multer.memoryStorage();
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            return cb(new Error('이미지 파일만 업로드 가능!'), false);
-        }
-        cb(null, true);
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = uuidv4();
+        const ext = path.extname(file.originalname);
+        const filename = `${uniqueSuffix}${ext}`;
+        cb(null, filename);
     }
 });
+  
+const upload = multer({ storage: storage });
 
 router.post('', upload.single('image'), studyMiddleware.createStudy); // 스터디 생성
 router.get('', studyMiddleware.allStudy); // 모든 스터디 조회
