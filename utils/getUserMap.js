@@ -15,4 +15,4 @@ async function getUserMap(userIds) {
     }, {});
 }
 
-module.exports = getUserMap;
+module.exports = { getUserMap };
