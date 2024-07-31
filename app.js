@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 
 const { sequelize } = require('./models');
+const path = require('path');
 
 app.set('port', process.env.PORT || 3001); //포트 설정
 
@@ -29,6 +30,7 @@ app.use('/users', users);
 // 스터디
 const studies = require('./routes/study');
 app.use('/study', studies);
+app.use('/image', express.static(path.join(__dirname, 'study-images')));
 
 // 스터디 댓글
 const comments = require('./routes/task');

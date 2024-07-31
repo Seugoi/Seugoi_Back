@@ -1,6 +1,7 @@
 const { User, Study, LikeStudy, Notice, Task, sequelize } = require('../models');
 const { getUserMap } = require('../utils/getUserMap');
 const { getViewCountMap } = require('../utils/getViewCountMap');
+const { getImageUrl } = require('../utils/getImageUrl');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -38,10 +39,15 @@ exports.createStudy = async (req, res) => {
         const currentDate = moment().startOf('day');
         const Dday = momentEndDate.diff(currentDate, 'days');
 
+        const file = req.file;
+        if (!file) {
+            return res.status(400).send('파일이 업로드되지 않았습니다.');
+        }
+
         // 스터디 생성
         const createstudy = await Study.create({
             user_id: user_id,
-            image: req.file ? req.file.originalname : null,
+            image: file.filename ? file.filename : null,
             name, title,
             category: parsedcategory,
             peopleNumber,
@@ -71,11 +77,16 @@ exports.allStudy = async (req, res) => {
         const userMap = await getUserMap(userIds);
         const viewCountMap = await getViewCountMap(studyIds);
 
-        const response = studies.map(study => ({
-            ...study.dataValues,
-            user: userMap[study.user_id],
-            viewCount: viewCountMap[study.id] || 0,
-        }));
+        const response = studies.map(study => {
+            const imageUrl = study.image ? getImageUrl(study.image) : null;
+
+            return {
+                ...study.dataValues,
+                image: imageUrl,
+                user: userMap[study.user_id],
+                viewCount: viewCountMap[study.id] || 0,
+            };
+        });
 
         res.status(200).json(response);
     } catch(err) {
@@ -91,8 +102,8 @@ exports.idStudy = async (req, res) => {
 
         const study = await Study.findOne({
             attributes: [
-                'id', 'user_id', 'name',
-                'image', 'category', 'peopleNumber',
+                'id', 'user_id', 'name', 'image',
+                'category', 'peopleNumber',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 
@@ -111,13 +122,15 @@ exports.idStudy = async (req, res) => {
         }
 
         const userMap = await getUserMap([study.user_id]);
-        const viewCount = await getViewCountMap(study_id);
+        const viewCountMap = await getViewCountMap(study_id);
         const like = await LikeStudy.findOne({ where: { user_id: study.user_id, study_id } });
+        const imageUrl = study.image ? getImageUrl(study.image) : null;
 
         const response = {
             ...study.dataValues,
+            image: imageUrl,
             user: userMap[study.user_id],
-            viewCount: viewCount || 0,
+            viewCount: viewCountMap[study_id] || 0,
             liked: !!like
         };
 
@@ -137,8 +150,8 @@ exports.keywordStudy = async (req, res) => {
 
         const studies = await Study.findAll({
             attributes: [
-                'id', 'user_id',
-                'name', 'image', 'category', 'peopleNumber',
+                'id', 'user_id', 'image',
+                'name', 'category', 'peopleNumber',
                 'endDate', 'title', 
                 'simple_content', 
                 'study_content', 
@@ -170,11 +183,16 @@ exports.keywordStudy = async (req, res) => {
         const userMap = await getUserMap(userIds);
         const viewCountMap = await getViewCountMap(studyIds);
 
-        const response = studies.map(study => ({
-            ...study.dataValues,
-            user: userMap[study.user_id],
-            viewCount: viewCountMap[study.id] || 0
-        }));
+        const response = studies.map(study => {
+            const imageUrl = study.image ? getImageUrl(study.image) : null;
+
+            return {
+                ...study.dataValues,
+                image: imageUrl,
+                user: userMap[study.user_id],
+                viewCount: viewCountMap[study.id] || 0,
+            };
+        });
 
         res.status(200).json(response);
     } catch(err) {

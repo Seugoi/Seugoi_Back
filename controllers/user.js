@@ -1,8 +1,9 @@
 const { User, Study, LikeStudy, Notice, JoinStudy } = require('../models');
 const crypto = require('crypto'); // 비밀번호 암호화
 const axios = require("axios");
-const { getUserMap } = require('../utils/user');
-const { getViewCountMap } = require('../utils/viewHistory');
+const { getUserMap } = require('../utils/getUserMap');
+const { getViewCountMap } = require('../utils/getViewCountMap');
+const { getImageUrl } = require('../utils/getImageUrl');
 require('dotenv').config();
 
 // 회원가입
@@ -199,7 +200,7 @@ exports.userInfoGetMind = async (req, res) => {
 // 내가 작성한 스터디 조회
 exports.userStudy = async (req, res) => {
   try {
-      const user_id = req.params.user_id;
+      const user_id = Number(req.params.user_id);
 
       const study = await Study.findAll({
           attributes: [
@@ -221,7 +222,20 @@ exports.userStudy = async (req, res) => {
           return res.status(404).json({ error: "스터디를 찾을 수 없습니다." });
       }
 
-      res.json(study);
+      const studyIds = study.map(study => study.id);
+      const viewCountMap = await getViewCountMap(studyIds);
+
+      const response = study.map(study => {
+        const imageUrl = study.image ? getImageUrl(study.image) : null;
+
+        return {
+            ...study.dataValues,
+            image: imageUrl,
+            viewCount: viewCountMap[study.id] || 0,
+        };
+      });
+
+      res.json(response);
   } catch(err) {
       console.error(err);
       res.status(500).json({ error: "서버 오류로 내가 작성한 스터디 조회 실패" });
@@ -231,7 +245,7 @@ exports.userStudy = async (req, res) => {
 // 내가 찜한 스터디 조회
 exports.userLikeStudy = async (req, res) => {
   try {
-      const user_id = req.params.user_id;
+      const user_id = Number(req.params.user_id);
 
       // 사용자가 좋아요를 누른 스터디 ID 목록 조회
       const likedStudies = await LikeStudy.findAll({
@@ -267,16 +281,17 @@ exports.userLikeStudy = async (req, res) => {
 
       // 각 스터디의 작성자 정보와 조회 횟수 및 좋아요 여부 조회
       const response = await Promise.all(studies.map(async (study) => {
-
-          const user = await getUserMap([study.user_id]);
-          const viewCount = await getViewCountMap([study.id]);
-
-          return {
-              ...study.dataValues,
-              user: user[study.user_id],
-              viewCount: viewCount[study.id] || 0,
-              liked: true
-          };
+        const userMap = await getUserMap([study.user_id]);
+        const viewCountMap = await getViewCountMap([study.id]);
+        const imageUrl = study.image ? getImageUrl(study.image) : null;
+        
+        return {
+            ...study.dataValues,
+            image: imageUrl,
+            user: userMap[study.user_id],
+            viewCount: viewCountMap[study.id] || 0,
+            liked: true
+        };
       }));
 
       res.status(200).json(response);
@@ -290,7 +305,7 @@ exports.userLikeStudy = async (req, res) => {
 // 내가 가입한 스터디 조회
 exports.userJoinStudy = async (req, res) => {
   try {
-      const user_id = req.params.user_id;
+      const user_id = Number(req.params.user_id);
 
       if (!user_id) {
           return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
@@ -330,10 +345,13 @@ exports.userJoinStudy = async (req, res) => {
 
       const response = joinedStudy.map(join => {
           const study = studies.find(study => study.id === join.study_id);
+          const imageUrl = study.image ? getImageUrl(study.image) : null;
+          
           return {
               ...join.dataValues,
               study: {
                 ...study.dataValues,
+                image: imageUrl,
                 user: userMap[study.user_id]
               }
           };
@@ -349,7 +367,7 @@ exports.userJoinStudy = async (req, res) => {
 // 내가 쓴 공지 조회
 exports.userNotice = async (req, res) => {
   try {
-      const user_id = req.params.user_id;
+      const user_id = Number(req.params.user_id);
 
       const notices = await Notice.findAll({
           attributes: [
