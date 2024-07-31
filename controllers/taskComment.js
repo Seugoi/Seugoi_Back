@@ -1,5 +1,5 @@
 const { User, TaskComment } = require('../models');
-const { getUserMap } = require('../utils/user');
+const { getUserMap } = require('../utils/getUserMap');
 
 // 스터디 댓글 등록
 exports.createComment = async (req, res) => {

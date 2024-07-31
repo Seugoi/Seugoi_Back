@@ -1,5 +1,5 @@
 const { User, Notice } = require("../models");
-const { getUserMap } = require('../utils/user');
+const { getUserMap } = require('../utils/getUserMap');
 
 // 공지 생성
 exports.createNotice = async (req, res) => {
