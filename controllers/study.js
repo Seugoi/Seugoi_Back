@@ -1,7 +1,7 @@
 const { User, Study, LikeStudy, Notice, Task, sequelize } = require('../models');
 const { getUserMap } = require('../utils/getUserMap');
 const { getViewCountMap } = require('../utils/getViewCountMap');
-const { getImageUrl } = require('../utils/getImageUrl');
+const { getStudyImageUrl } = require('../utils/getImageUrl');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -78,7 +78,7 @@ exports.allStudy = async (req, res) => {
         const viewCountMap = await getViewCountMap(studyIds);
 
         const response = studies.map(study => {
-            const imageUrl = study.image ? getImageUrl(study.image) : null;
+            const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
 
             return {
                 ...study.dataValues,
@@ -124,7 +124,7 @@ exports.idStudy = async (req, res) => {
         const userMap = await getUserMap([study.user_id]);
         const viewCountMap = await getViewCountMap(study_id);
         const like = await LikeStudy.findOne({ where: { user_id: study.user_id, study_id } });
-        const imageUrl = study.image ? getImageUrl(study.image) : null;
+        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
 
         const response = {
             ...study.dataValues,
@@ -184,7 +184,7 @@ exports.keywordStudy = async (req, res) => {
         const viewCountMap = await getViewCountMap(studyIds);
 
         const response = studies.map(study => {
-            const imageUrl = study.image ? getImageUrl(study.image) : null;
+            const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
 
             return {
                 ...study.dataValues,

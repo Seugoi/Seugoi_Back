@@ -1,5 +1,6 @@
 const { User, TaskComment } = require('../models');
 const { getUserMap } = require('../utils/getUserMap');
+const { getCommentImageUrl } = require('../utils/getImageUrl');
 
 // 스터디 댓글 등록
 exports.createComment = async (req, res) => {
@@ -13,7 +14,12 @@ exports.createComment = async (req, res) => {
             return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
         }
 
-        const images = req.files ? req.files.map(file => file.originalname) : [];
+        const files = req.files;
+        if (!files || files.length === 0) {
+            return res.status(400).send('파일이 업로드되지 않았습니다.');
+        }
+
+        const images = files ? files.map(file => file.filename) : [];
 
         const createcomment = await TaskComment.create({
             user_id: Number(user_id),
@@ -42,14 +48,18 @@ exports.allTaskComment = async (req, res) => {
         const userIds = comments.map(comment => comment.user_id);
         const userMap = await getUserMap(userIds);
 
-        const response = comments.map(comment => ({
-            id: comment.id,
-            user_id: comment.user_id,
-            study_id: comment.study_id,
-            content: comment.content,
-            images: JSON.parse(comment.image || '[]'),
-            user: userMap[comment.user_id]
-        }));
+        const response = comments.map(comment => {
+            const images = comment.image ? JSON.parse(comment.image) : [];
+            
+            return {
+                id: comment.id,
+                user_id: comment.user_id,
+                study_id: comment.study_id,
+                content: comment.content,
+                images: images.map(img => getCommentImageUrl(img)),
+                user: userMap[comment.user_id]
+            };
+        });
 
         res.status(200).json(response);
     } catch(err) {
@@ -79,13 +89,14 @@ exports.idComment = async (req, res) => {
         // 댓글과 작성자 정보 조회
         const taskCommentsWithUser = await Promise.all(taskComment.map(async (taskComment) => {
             const userMap = await getUserMap([taskComment.user_id]);
+            const images = taskComment.image ? JSON.parse(taskComment.image) : [];
 
             return {
                 id: taskComment.id,
                 user_id: taskComment.user_id,
                 study_id: taskComment.study_id,
                 content: taskComment.content,
-                images: JSON.parse(taskComment.image || '[]'),
+                images: images.map(img => getCommentImageUrl(img)),
                 user: userMap[taskComment.user_id]
             };
         }));

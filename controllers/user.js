@@ -3,7 +3,7 @@ const crypto = require('crypto'); // 비밀번호 암호화
 const axios = require("axios");
 const { getUserMap } = require('../utils/getUserMap');
 const { getViewCountMap } = require('../utils/getViewCountMap');
-const { getImageUrl } = require('../utils/getImageUrl');
+const { getStudyImageUrl } = require('../utils/getImageUrl');
 require('dotenv').config();
 
 // 회원가입
@@ -226,7 +226,7 @@ exports.userStudy = async (req, res) => {
       const viewCountMap = await getViewCountMap(studyIds);
 
       const response = study.map(study => {
-        const imageUrl = study.image ? getImageUrl(study.image) : null;
+        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
 
         return {
             ...study.dataValues,
@@ -283,7 +283,7 @@ exports.userLikeStudy = async (req, res) => {
       const response = await Promise.all(studies.map(async (study) => {
         const userMap = await getUserMap([study.user_id]);
         const viewCountMap = await getViewCountMap([study.id]);
-        const imageUrl = study.image ? getImageUrl(study.image) : null;
+        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
         
         return {
             ...study.dataValues,
@@ -345,7 +345,7 @@ exports.userJoinStudy = async (req, res) => {
 
       const response = joinedStudy.map(join => {
           const study = studies.find(study => study.id === join.study_id);
-          const imageUrl = study.image ? getImageUrl(study.image) : null;
+          const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
           
           return {
               ...join.dataValues,
