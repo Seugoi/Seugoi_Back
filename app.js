@@ -30,11 +30,12 @@ app.use('/users', users);
 // 스터디
 const studies = require('./routes/study');
 app.use('/study', studies);
-app.use('/image', express.static(path.join(__dirname, 'study-images')));
+app.use('/study-image', express.static(path.join(__dirname, 'images/study-images')));
 
 // 스터디 댓글
 const comments = require('./routes/task');
 app.use('/comment', comments);
+app.use('/comment-image', express.static(path.join(__dirname, 'images/comment-images')));
 
 // 공지
 const notice = require("./routes/notice");

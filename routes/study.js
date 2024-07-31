@@ -9,7 +9,7 @@ const path = require('path');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        cb(null, 'images/study-images/');
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = uuidv4();

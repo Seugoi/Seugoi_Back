@@ -1,5 +1,9 @@
-function getImageUrl(filename) {
-    return `http://localhost:3001/image/${filename}`;
+function getStudyImageUrl(filename) {
+    return `http://localhost:3001/study-image/${filename}`;
 }
 
-module.exports = { getImageUrl };
+function getCommentImageUrl(filename) {
+    return `http://localhost:3001/comment-image/${filename}`;
+}
+
+module.exports = { getStudyImageUrl, getCommentImageUrl };
