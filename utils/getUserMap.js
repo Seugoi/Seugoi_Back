@@ -5,7 +5,7 @@ async function getUserMap(userIds) {
     const users = await User.findAll({
         attributes: ['id', 'nickname', 'profile_img_url'],
         where: {
-            id: Number(userIds)
+            id: userIds
         }
     });
 
