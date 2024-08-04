@@ -1,4 +1,5 @@
 const { User, Study, Task } = require('../models');
+const { getUserMap } = require('../utils/getUserMap');
 const moment = require('moment');
 
 // 스터디 과제 생성
@@ -64,6 +65,31 @@ exports.getAllTasksForStudy = async (req, res) => {
         });
 
         res.status(200).json(tasks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
+    }
+};
+
+// 특정 과제 조회
+exports.getTaskById = async (req, res) => {
+    try {
+        const task_id = req.params.task_id;
+
+        // 과제 조회
+        const task = await Task.findByPk(task_id);
+        if (!task) {
+            return res.status(404).json({ error: '과제를 찾을 수 없습니다.' });
+        }
+
+        // 유저 정보 추가
+        const userMap = await getUserMap([task.user_id]);
+        const response = {
+            ...task.dataValues,
+            user: userMap[task.user_id]
+        };
+
+        res.status(200).json(response);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
