@@ -45,3 +45,27 @@ exports.createTask = async (req, res) => {
         res.status(500).json({ error: '서버 오류로 과제가 생성되지 않았습니다.' });
     }
 };
+
+// 특정 스터디의 모든 과제 조회
+exports.getAllTasksForStudy = async (req, res) => {
+    try {
+        const study_id = req.params.study_id;
+
+        // 스터디 존재 여부
+        const study = await Study.findByPk(study_id);
+        if (!study) {
+            return res.status(404).json({ error: '존재하지 않는 스터디입니다.' });
+        }
+
+        // 스터디에 속한 모든 과제 조회
+        const tasks = await Task.findAll({
+            where: { study_id },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
+    }
+};
