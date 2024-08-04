@@ -95,3 +95,30 @@ exports.getTaskById = async (req, res) => {
         res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
     }
 };
+
+// 유저가 완료한 과제 조회
+exports.getCompletedTasksByUser = async (req, res) => {
+    try {
+        const user_id = req.params.user_id;
+
+        // 유저 존재 여부
+        const user = await User.findByPk(user_id);
+        if (!user) {
+            return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
+        }
+
+        // 유저가 완료한 과제 조회
+        const completedTasks = await Task.findAll({
+            where: {
+                user_id,
+                completed: true
+            },
+            order: [['updatedAt', 'DESC']]
+        });
+
+        res.status(200).json(completedTasks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
+    }
+};
