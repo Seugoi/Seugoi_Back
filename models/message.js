@@ -6,7 +6,7 @@ class Message extends Sequelize.Model {
       {
         id: {
           type: DataTypes.INTEGER,
-          autoIncrerment: true,
+          autoIncrement: true,
           primaryKey: true,
         },
         chat_room_id: {
@@ -40,6 +40,7 @@ class Message extends Sequelize.Model {
         modelName: "Message",
         tableName: "message",
         timestamps: false,
+        paranoid: false,
       }
     );
   }
