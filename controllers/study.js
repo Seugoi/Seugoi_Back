@@ -90,7 +90,7 @@ exports.allStudy = async (req, res) => {
 
         res.status(200).json(response);
     } catch(err) {
-        console.error(err);
+        console.error(err); 
         res.status(500).json({ error: "서버 오류로 모든 스터디 정보 조회 실패" });
     }
 }

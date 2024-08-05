@@ -1,9 +1,15 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class UserChatRoom extends Sequelize.Model {
+class UserChatroom extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          allowNull: true,
+          autoIncrement: true,
+        },
         user_id: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -32,6 +38,7 @@ class UserChatRoom extends Sequelize.Model {
         modelName: "UserChatRoom",
         tableName: "user_chat_room",
         timestamps: false,
+        paranoid: false,
         primaryKey: ["user_id", "chat_room_id"],
         indexes: [
           {
@@ -44,4 +51,4 @@ class UserChatRoom extends Sequelize.Model {
   }
 }
 
-module.exports = UserChatRoom;
+module.exports = UserChatroom;

@@ -1,12 +1,12 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class ChatRoom extends Sequelize.Model {
+class Chatroom extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
         id: {
           type: DataTypes.INTEGER,
-          autoIncrerment: true,
+          autoIncrement: true,
           primaryKey: true,
         },
         name: {
@@ -24,9 +24,10 @@ class ChatRoom extends Sequelize.Model {
         modelName: "ChatRoom",
         tableName: "chat_rooms",
         timestamps: false,
+        paranoid: false,
       }
     );
   }
 }
 
-module.exports = ChatRoom;
+module.exports = Chatroom;
