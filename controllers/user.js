@@ -4,6 +4,7 @@ const axios = require("axios");
 const { getUserMap } = require('../utils/getUserMap');
 const { getViewCountMap } = require('../utils/getViewCountMap');
 const { getStudyImageUrl } = require('../utils/getImageUrl');
+const { getStudyMap } = require('../utils/getStudyMap');
 require('dotenv').config();
 
 // 회원가입
@@ -203,19 +204,7 @@ exports.userStudy = async (req, res) => {
       const user_id = Number(req.params.user_id);
 
       const study = await Study.findAll({
-          attributes: [
-              'id', 'image',
-              'endDate', 'title', 
-              'simple_content', 
-              'study_content', 
-              'detail_content', 
-              'recom_content',
-              'Dday',
-              'join_people_id'
-          ],
-          where: {
-              user_id: user_id
-          }
+          where: { user_id: user_id }
       })
 
       if (!study) {
@@ -223,15 +212,11 @@ exports.userStudy = async (req, res) => {
       }
 
       const studyIds = study.map(study => study.id);
-      const viewCountMap = await getViewCountMap(studyIds);
+      const studyMap = await getStudyMap(studyIds);
 
       const response = study.map(study => {
-        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
-
         return {
-            ...study.dataValues,
-            image: imageUrl,
-            viewCount: viewCountMap[study.id] || 0,
+            study: studyMap[study.id]
         };
       });
 
@@ -249,10 +234,7 @@ exports.userLikeStudy = async (req, res) => {
 
       // 사용자가 좋아요를 누른 스터디 ID 목록 조회
       const likedStudies = await LikeStudy.findAll({
-          attributes: ['study_id'],
-          where: {
-              user_id: user_id
-          }
+          where: { user_id: user_id }
       });
 
       if (likedStudies.length === 0) {
@@ -263,33 +245,15 @@ exports.userLikeStudy = async (req, res) => {
 
       // 좋아요를 누른 스터디들의 세부 정보 조회
       const studies = await Study.findAll({
-          attributes: [
-              'id', 'name',
-              'image', 'category', 'peopleNumber',
-              'endDate', 'title', 
-              'simple_content', 
-              'study_content', 
-              'detail_content', 
-              'recom_content',
-              'Dday',
-              'join_people_id'
-          ],
-          where: {
-              id: studyIds
-          }
+          where: { id: studyIds }
       });
 
       // 각 스터디의 작성자 정보와 조회 횟수 및 좋아요 여부 조회
       const response = await Promise.all(studies.map(async (study) => {
-        const userMap = await getUserMap([study.user_id]);
-        const viewCountMap = await getViewCountMap([study.id]);
-        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
+        const studyMap = await getStudyMap([study.id]);
         
         return {
-            ...study.dataValues,
-            image: imageUrl,
-            user: userMap[study.user_id],
-            viewCount: viewCountMap[study.id] || 0,
+            study: studyMap[study.id],
             liked: true
         };
       }));
@@ -312,10 +276,7 @@ exports.userJoinStudy = async (req, res) => {
       }
 
       const joinedStudy = await JoinStudy.findAll({
-        attributes: ['id', 'study_id'],
-        where: {
-            user_id: user_id
-        }
+        where: { user_id: user_id }
       });
 
       if (joinedStudy.length === 0) {
@@ -325,26 +286,15 @@ exports.userJoinStudy = async (req, res) => {
       const studyId = joinedStudy.map(join => join.study_id);
 
       const studies = await Study.findAll({
-          attributes: [
-              'id', 'user_id', 'name', 'image', 'category', 'peopleNumber',
-              'endDate', 'title', 
-              'simple_content', 
-              'study_content', 
-              'detail_content', 
-              'recom_content',
-              'Dday',
-              'join_people_id'
-          ],
-          where: {
-              id: studyId
-          }
+          where: { id: studyId }
       });
 
       const userIds = studies.map(study => study.user_id);
       const userMap = await getUserMap(userIds);
 
       const response = joinedStudy.map(join => {
-          const study = studies.find(study => study.id === join.study_id);
+          // const study = studies.find(study => study.id === join.study_id);
+          const study = getStudyMap(study => study.id === join.study_id);
           const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
           
           return {
@@ -370,12 +320,7 @@ exports.userNotice = async (req, res) => {
       const user_id = Number(req.params.user_id);
 
       const notices = await Notice.findAll({
-          attributes: [
-              'id', 'user_id', 'title', 'content'
-          ],
-          where: {
-              user_id: user_id
-          }
+          where: { user_id: user_id }
       })
 
       if(notices.length === 0) {

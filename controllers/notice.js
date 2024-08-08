@@ -33,7 +33,6 @@ exports.studyAllNotice = async (req, res) => {
 
     try {
         const notices = await Notice.findAll({
-            attributes: ['id', 'user_id', 'study_id', 'title', 'content'],
             where: {
                 study_id: studyIds
             }
@@ -60,7 +59,6 @@ exports.idNotice = async (req, res) => {
         const notice_id = req.params.notice_id;
 
         const notice = await Notice.findOne({
-            attributes: ['id', 'user_id', 'study_id', 'title', 'content'],
             where: {
                 id: notice_id
             }

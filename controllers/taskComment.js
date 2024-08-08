@@ -52,11 +52,8 @@ exports.allTaskComment = async (req, res) => {
             const images = comment.image ? JSON.parse(comment.image) : [];
             
             return {
-                id: comment.id,
-                user_id: comment.user_id,
-                study_id: comment.study_id,
-                content: comment.content,
-                images: images.map(img => getCommentImageUrl(img)),
+                ...comment.dataValues,
+                image: images.map(img => getCommentImageUrl(img)),
                 user: userMap[comment.user_id]
             };
         });
@@ -73,13 +70,7 @@ exports.idComment = async (req, res) => {
     try {
         const study_id = Number(req.params.study_id);
         const taskComment = await TaskComment.findAll({
-            attributes: [
-                'id', 'user_id', 'study_id',
-                'content', 'image'
-            ],
-            where: {
-                study_id: study_id
-            }
+            where: { study_id: study_id }
         })
 
         if (taskComment.length === 0) {
@@ -92,11 +83,8 @@ exports.idComment = async (req, res) => {
             const images = taskComment.image ? JSON.parse(taskComment.image) : [];
 
             return {
-                id: taskComment.id,
-                user_id: taskComment.user_id,
-                study_id: taskComment.study_id,
-                content: taskComment.content,
-                images: images.map(img => getCommentImageUrl(img)),
+                ...taskComment.dataValues,
+                image: images.map(img => getCommentImageUrl(img)),
                 user: userMap[taskComment.user_id]
             };
         }));

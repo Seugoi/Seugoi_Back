@@ -2,6 +2,7 @@ const { User, Study, LikeStudy, Notice, Task, sequelize } = require('../models')
 const { getUserMap } = require('../utils/getUserMap');
 const { getViewCountMap } = require('../utils/getViewCountMap');
 const { getStudyImageUrl } = require('../utils/getImageUrl');
+const { getStudyMap } = require('../utils/getStudyMap');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
 
@@ -71,20 +72,12 @@ exports.allStudy = async (req, res) => {
     try {
         const studies = await Study.findAll();
 
-        const userIds = studies.map(study => study.user_id);
         const studyIds = studies.map(study => study.id);
-
-        const userMap = await getUserMap(userIds);
-        const viewCountMap = await getViewCountMap(studyIds);
+        const studyMap = await getStudyMap(studyIds);
 
         const response = studies.map(study => {
-            const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
-
             return {
-                ...study.dataValues,
-                image: imageUrl,
-                user: userMap[study.user_id],
-                viewCount: viewCountMap[study.id] || 0,
+                study: studyMap[study.id]
             };
         });
 
@@ -101,36 +94,19 @@ exports.idStudy = async (req, res) => {
         const study_id = req.params.study_id;
 
         const study = await Study.findOne({
-            attributes: [
-                'id', 'user_id', 'name', 'image',
-                'category', 'peopleNumber',
-                'endDate', 'title', 
-                'simple_content', 
-                'study_content', 
-                'detail_content', 
-                'recom_content',
-                'Dday',
-                'join_people_id'
-            ],
-            where: {
-                id: study_id
-            }
+            where: { id: study_id }
         })
 
         if (!study) {
             return res.status(404).json({ error: "스터디를 찾을 수 없습니다." });
         }
 
-        const userMap = await getUserMap([study.user_id]);
-        const viewCountMap = await getViewCountMap(study_id);
+        const studyMap = await getStudyMap(study_id);
+
         const like = await LikeStudy.findOne({ where: { user_id: study.user_id, study_id } });
-        const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
 
         const response = {
-            ...study.dataValues,
-            image: imageUrl,
-            user: userMap[study.user_id],
-            viewCount: viewCountMap[study_id] || 0,
+            study: studyMap[study_id],
             liked: !!like
         };
 
@@ -149,17 +125,6 @@ exports.keywordStudy = async (req, res) => {
         let searchString = `%${keyword}%`;
 
         const studies = await Study.findAll({
-            attributes: [
-                'id', 'user_id', 'image',
-                'name', 'category', 'peopleNumber',
-                'endDate', 'title', 
-                'simple_content', 
-                'study_content', 
-                'detail_content', 
-                'recom_content',
-                'Dday',
-                'join_people_id'
-            ],
             where: {
                 [Sequelize.Op.or]: [
                     sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), {
@@ -177,20 +142,12 @@ exports.keywordStudy = async (req, res) => {
             return res.status(200).json({ message: "검색 결과 없음" });
         }
 
-        const userIds = studies.map(study => study.user_id);
         const studyIds = studies.map(study => study.id);
-
-        const userMap = await getUserMap(userIds);
-        const viewCountMap = await getViewCountMap(studyIds);
+        const studyMap = await getStudyMap(studyIds);
 
         const response = studies.map(study => {
-            const imageUrl = study.image ? getStudyImageUrl(study.image) : null;
-
             return {
-                ...study.dataValues,
-                image: imageUrl,
-                user: userMap[study.user_id],
-                viewCount: viewCountMap[study.id] || 0,
+                study: studyMap[study.id]
             };
         });
 
@@ -206,13 +163,11 @@ exports.studyAllNoticeAndTask = async (req, res) => {
     try {
         // 과제 조회
         const tasks = await Task.findAll({
-            attributes: ['id', 'user_id', 'study_id', 'title', 'description', 'createdAt'],
             where: { study_id: studyIds }
         });
 
         // 공지 조회
         const notices = await Notice.findAll({
-            attributes: ['id', 'user_id', 'study_id', 'title', 'content', 'createdAt'],
             where: { study_id: studyIds }
         });
 
