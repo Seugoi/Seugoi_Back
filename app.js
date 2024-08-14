@@ -37,8 +37,13 @@ const studies = require('./routes/study');
 app.use('/study', studies);
 app.use('/study-image', express.static(path.join(__dirname, 'images/study-images')));
 
-// 스터디 댓글
+// 과제
 const comments = require('./routes/task');
+app.use('/task', comments);
+app.use('/task-image', express.static(path.join(__dirname, 'images/task-images')));
+
+// 과제 댓글
+const comments = require('./routes/taskComment');
 app.use('/comment', comments);
 app.use('/comment-image', express.static(path.join(__dirname, 'images/comment-images')));
 

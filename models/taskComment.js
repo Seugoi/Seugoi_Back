@@ -16,10 +16,10 @@ class TaskComment extends Sequelize.Model {
                     key : 'id'
                 }
             },
-            study_id: {
+            task_id: {
                 type: DataTypes.INTEGER,
                 references:{
-                    model : 'studies',
+                    model : 'task',
                     key : 'id'
                 }
             },

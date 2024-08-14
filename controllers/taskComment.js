@@ -6,7 +6,7 @@ const { getCommentImageUrl } = require('../utils/getImageUrl');
 exports.createComment = async (req, res) => {
     try {
         const {
-            user_id, study_id, content
+            user_id, task_id, content
         } = req.body;
 
         const user = await User.findByPk(user_id);
@@ -23,7 +23,7 @@ exports.createComment = async (req, res) => {
 
         const createcomment = await TaskComment.create({
             user_id: Number(user_id),
-            study_id: Number(study_id),
+            task_id: Number(task_id),
             content,
             image: JSON.stringify(images)
         });
@@ -65,12 +65,12 @@ exports.allTaskComment = async (req, res) => {
     }
 }
 
-// 스터디별 모든 댓글 조회
+// 과제별 모든 댓글 조회
 exports.idComment = async (req, res) => {
     try {
-        const study_id = Number(req.params.study_id);
+        const task_id = Number(req.params.task_id);
         const taskComment = await TaskComment.findAll({
-            where: { study_id: study_id }
+            where: { task_id: task_id }
         })
 
         if (taskComment.length === 0) {
