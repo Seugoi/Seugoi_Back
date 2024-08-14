@@ -12,5 +12,6 @@ router.get('/:user_id/study', usersMiddleware.userStudy); // 내가 작성한 �
 router.get('/:user_id/notice', usersMiddleware.userNotice); // 내가 작성한 모든 공지글 조회
 router.get('/:user_id/like', usersMiddleware.userLikeStudy); // 내가 찜한 스터디 조회
 router.get('/:user_id/join', usersMiddleware.userJoinStudy); // 내가 가입한 스터디 조회
+router.get('/:user_id/completed-tasks', usersMiddleware.getCompletedTasksByUser); // 유저가 완료한 과제 조회
 
 module.exports = router;
