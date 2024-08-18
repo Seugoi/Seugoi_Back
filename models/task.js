@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-class Study extends Sequelize.Model {
+class Task extends Sequelize.Model {
     static init(sequelize) {
         return super.init ({
             id: {
@@ -16,61 +16,36 @@ class Study extends Sequelize.Model {
                     key : 'id'
                 }
             },
-            image: {
-                type: DataTypes.TEXT,
-                allowNull: true
-            },
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false
-            },
-            category: {
-                type: DataTypes.JSON,
-                allowNull: false
-            },
-            peopleNumber: {
+            study_id: {
                 type: DataTypes.INTEGER,
-                allowNull: true
-            },
-            endDate: {
-                type: DataTypes.STRING,
-                allowNull: false
+                references:{
+                    model : 'studies',
+                    key : 'id'
+                }
             },
             title: {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            simple_content: {
+            content: {
                 type: DataTypes.TEXT,
                 allowNull: false
             },
-            study_content: {
-                type: DataTypes.JSON,
+            link: {
+                type: DataTypes.STRING,
                 allowNull: false
             },
-            detail_content: {
+            images: {
                 type: DataTypes.TEXT,
-                allowNull: false
-            },
-            recom_content: {
-                type: DataTypes.JSON,
-                allowNull: false
-            },
-            Dday: {
-                type: DataTypes.INTEGER,
                 allowNull: true
             },
-            join_people_id: {
-                type: DataTypes.JSON,
-                allowNull: true
-            }
         }, {
             sequelize,
             timestamps: true,
             createdAt: true,
             updatedAt: false,
-            modelName: 'Study',
-            tableName: 'studies',
+            modelName: 'Task',
+            tableName: 'task',
             paranoid: false,
             charset: 'utf8',
             collate: 'utf8_general_ci',
@@ -78,4 +53,4 @@ class Study extends Sequelize.Model {
     }
 }
 
-module.exports = Study;
+module.exports = Task;

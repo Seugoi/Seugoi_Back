@@ -38,8 +38,8 @@ app.use('/study', studies);
 app.use('/study-image', express.static(path.join(__dirname, 'images/study-images')));
 
 // 과제
-const comments = require('./routes/task');
-app.use('/task', comments);
+const task = require('./routes/task');
+app.use('/task', task);
 app.use('/task-image', express.static(path.join(__dirname, 'images/task-images')));
 
 // 과제 댓글
