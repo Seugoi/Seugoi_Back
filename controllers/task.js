@@ -22,12 +22,12 @@ exports.createTask = async (req, res) => {
             return res.status(404).json({ error: '존재하지 않는 유저입니다.' });
         }
 
-        // 파일 처리 (최대 5개)
+        // 파일 처리
         const files = req.files;
-        let imagePaths = [];
-        if (files && files.length > 0) {
-            imagePaths = files.map(file => file.filename);
+        if (!files || files.length === 0) {
+            return res.status(400).send('파일이 업로드되지 않았습니다.');
         }
+        let imagePaths = files.map(file => file.filename);
 
         // 과제 생성
         const task = await Task.create({
