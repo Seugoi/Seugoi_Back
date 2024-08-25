@@ -1,16 +1,17 @@
 const { User, Study, Task } = require('../models');
+const { getTaskImageUrl } = require('../utils/getImageUrl');
 const { getUserMap } = require('../utils/getUserMap');
 const moment = require('moment');
 
 // 스터디 과제 생성
 exports.createTask = async (req, res) => {
     try {
-        let { user_id, study_id, title, content, link, images } = req.body;
+        let { user_id, study_id, title, content, link } = req.body;
 
-        // 입력 데이터 유효성 검사
-        if (!study_id || !user_id || !title || !due_date) {
-            return res.status(400).json({ error: '모든 필드를 채워주세요.' });
-        }
+        // // 입력 데이터 유효성 검사
+        // if (!study_id || !user_id || !title || !due_date) {
+        //     return res.status(400).json({ error: '모든 필드를 채워주세요.' });
+        // }
 
         // 스터디 및 유저 존재 여부 확인
         const study = await Study.findByPk(study_id);
@@ -27,7 +28,7 @@ exports.createTask = async (req, res) => {
         if (!files || files.length === 0) {
             return res.status(400).send('파일이 업로드되지 않았습니다.');
         }
-        let imagePaths = files.map(file => file.filename);
+        let imagePaths = files ? files.map(file => file.filename) : [];
 
         // 과제 생성
         const task = await Task.create({
@@ -36,7 +37,7 @@ exports.createTask = async (req, res) => {
             title,
             content,
             link,
-            images: imagePaths
+            images: JSON.stringify(imagePaths)
         });
 
         res.status(201).json({ message: '과제가 성공적으로 생성되었습니다.', task });
@@ -63,7 +64,18 @@ exports.getAllTasksForStudy = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        res.status(200).json(tasks);
+        const response = await Promise.all(tasks.map(async (task) => {
+            const userMap = await getUserMap([task.user_id]);
+            const images = task.images ? JSON.parse(task.images) : [];
+
+            return {
+                ...task.dataValues,
+                images: images.map(img => getTaskImageUrl(img)),
+                user: userMap[task.user_id]
+            };
+        }));
+
+        res.status(200).json(response);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: '서버 오류로 과제 조회 실패' });
@@ -83,8 +95,10 @@ exports.getTaskById = async (req, res) => {
 
         // 유저 정보 추가
         const userMap = await getUserMap([task.user_id]);
+        const images = task.images ? JSON.parse(task.images) : [];
         const response = {
             ...task.dataValues,
+            images: images.map(img => getTaskImageUrl(img)),
             user: userMap[task.user_id]
         };
 
