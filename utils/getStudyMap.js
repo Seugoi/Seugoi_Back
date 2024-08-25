@@ -2,6 +2,7 @@ const { Study } = require('../models');
 const { getUserMap } = require('./getUserMap');
 const { getViewCountMap } = require('./getViewCountMap');
 const { getStudyImageUrl } = require('./getImageUrl');
+const { getCurrentPercent } = require('./getCurrentPercent');
 
 async function getStudyMap(studyIds) {
     const studies = await Study.findAll({
@@ -12,11 +13,13 @@ async function getStudyMap(studyIds) {
 
     const userMap = await getUserMap(userIds);
     const viewCountMap = await getViewCountMap(studyIds);
+    const percent = await getCurrentPercent(userIds, studyIds);
 
     return studies.reduce((acc, study) => {
         study.dataValues.image = getStudyImageUrl(study.imagePath) || null;
         study.dataValues.user = userMap[study.user_id];
         study.dataValues.viewCount = viewCountMap[study.id] || 0;
+        study.dataValues.percent = percent[study.user_id, study.id] || 0;
         acc[study.id] = study;
         return acc;
     }, {});

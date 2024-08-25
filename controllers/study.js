@@ -1,7 +1,5 @@
 const { User, Study, LikeStudy, Notice, Task, sequelize } = require('../models');
 const { getUserMap } = require('../utils/getUserMap');
-const { getViewCountMap } = require('../utils/getViewCountMap');
-const { getStudyImageUrl } = require('../utils/getImageUrl');
 const { getStudyMap } = require('../utils/getStudyMap');
 const moment = require('moment');
 const { Sequelize } = require('sequelize');
@@ -160,6 +158,8 @@ exports.keywordStudy = async (req, res) => {
 
 // 스터디별 과제와 공지 모두 조회(최신순) type으로 구분 => task, notice
 exports.studyAllNoticeAndTask = async (req, res) => {
+    const studyIds = req.params.study_id;
+    
     try {
         // 과제 조회
         const tasks = await Task.findAll({

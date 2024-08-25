@@ -6,7 +6,7 @@ const moment = require('moment');
 // 스터디 과제 생성
 exports.createTask = async (req, res) => {
     try {
-        let { user_id, study_id, title, content, link, images } = req.body;
+        let { user_id, study_id, title, content, link } = req.body;
 
         // // 입력 데이터 유효성 검사
         // if (!study_id || !user_id || !title || !due_date) {
