@@ -16,10 +16,10 @@ async function getStudyMap(studyIds) {
     const percent = await getCurrentPercent(userIds, studyIds);
 
     return studies.reduce((acc, study) => {
-        study.dataValues.image = getStudyImageUrl(study.imagePath) || null;
+        study.dataValues.image = getStudyImageUrl(study.image) || null;
         study.dataValues.user = userMap[study.user_id];
         study.dataValues.viewCount = viewCountMap[study.id] || 0;
-        study.dataValues.percent = percent[study.user_id, study.id] || 0;
+        study.dataValues.percent = percent[study.user_id, study.id];
         acc[study.id] = study;
         return acc;
     }, {});
