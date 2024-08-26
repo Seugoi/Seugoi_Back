@@ -22,11 +22,14 @@ async function getCurrentPercent(userIds, studyIds) {
         }
     });
 
-    const totalTasks = taskCount[study.id] || 0;
-    const completedTasks = completedTaskCount[study.id] || 0;
+    const percentMap = {};
 
-    if (totalTasks === 0) return 0;
-    return ((completedTasks / totalTasks) * 100).toFixed(2);
+    const totalTasks = taskCount[studyIds] || 0;
+    const completedTasks = completedTaskCount[studyIds] || 0;
+
+    percentMap[studyIds] = totalTasks === 0 ? 0 : parseFloat(((completedTasks / totalTasks) * 100).toFixed(2));
+
+    return percentMap;
 }
 
 module.exports = { getCurrentPercent };

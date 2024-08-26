@@ -238,7 +238,7 @@ exports.userLikeStudy = async (req, res) => {
       });
 
       if (likedStudies.length === 0) {
-          return res.status(200).json({ message: "좋아요를 누른 스터디가 없습니다." });
+          return res.status(200).json(null);
       }
 
       const studyIds = likedStudies.map(like => like.study_id);
@@ -280,7 +280,7 @@ exports.userJoinStudy = async (req, res) => {
       });
 
       if (joinedStudy.length === 0) {
-        return res.status(200).json({ message: "가입한 스터디가 없습니다." });
+        return res.status(200).json(null);
       }
 
       const studyId = joinedStudy.map(join => join.study_id);
@@ -324,7 +324,7 @@ exports.userNotice = async (req, res) => {
       })
 
       if(notices.length === 0) {
-        return res.status(200).json({ message: "내가 쓴 공지글이 존재하지 않습니다." });
+        return res.status(200).json(null);
       }
 
       const user = await User.findByPk(user_id);
